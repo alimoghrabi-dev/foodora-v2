@@ -63,7 +63,7 @@ export class AdminRestaurantService {
 
   async generateTokens(restaurantId: string) {
     const payload = { sub: restaurantId };
-
+    console.log(restaurantId);
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET_RESTAURANT,
       expiresIn: '7d',

@@ -6,12 +6,12 @@ export const Restaurant = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): IRestaurant => {
     const request = ctx
       .switchToHttp()
-      .getRequest<Request & { restaurant: IRestaurant }>();
+      .getRequest<Request & { user: IRestaurant }>();
 
-    if (!request.restaurant) {
+    if (!request.user) {
       throw new Error('Restaurant not found in request');
     }
 
-    return request.restaurant;
+    return request.user;
   },
 );

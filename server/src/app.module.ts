@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './features/user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
+import { AdminRestaurantModule } from './features/admin-restaurant/admin-restaurant.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import * as Joi from 'joi';
     MongooseModule.forRoot(process.env.MONGODB_URI!),
     AuthModule,
     UserModule,
+    AdminRestaurantModule,
   ],
   controllers: [AppController],
   providers: [AppService],

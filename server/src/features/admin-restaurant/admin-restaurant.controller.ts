@@ -11,9 +11,9 @@ import { AdminRestaurantService } from './admin-restaurant.service';
 import { RegisterRestaurantDto } from './dtos/restaurant-register.dto';
 import { LoginRestaurantDto } from './dtos/restaurant-login.dto';
 import { Response } from 'express';
-import { JwtAuthGuard } from 'src/guards/jwt.guard';
 import { IRestaurant } from 'types/nest';
 import { Restaurant } from 'decorators/restaurant.decorator';
+import { JwtRestaurantGuard } from 'src/guards/jwt-restaurant.guard';
 
 @Controller('admin-restaurant')
 export class AdminRestaurantController {
@@ -55,14 +55,14 @@ export class AdminRestaurantController {
 
   @Get('status')
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRestaurantGuard)
   status(@Restaurant() restaurant: IRestaurant) {
     return restaurant;
   }
 
   @Post('logout')
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRestaurantGuard)
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie('Fresh_V2_Access_Token_RESTAURANT', {
       httpOnly: true,

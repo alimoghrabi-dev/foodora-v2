@@ -56,7 +56,13 @@ export class AuthService {
       return this.generateTokens(user._id as string);
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException('Failed to login user');
+      if (error instanceof UnauthorizedException) {
+        throw new UnauthorizedException(error.message);
+      } else {
+        throw new InternalServerErrorException(
+          'Failed to login user due to a server error',
+        );
+      }
     }
   }
 

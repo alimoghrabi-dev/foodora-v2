@@ -5,9 +5,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Restaurant, RestaurantDocument } from 'src/schemas/restaurant.schema';
 import { Request } from 'express';
 import { Model } from 'mongoose';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
-export class JwtRestaurantStrategy extends PassportStrategy(Strategy) {
+export class JwtRestaurantStrategy extends PassportStrategy(
+  Strategy,
+  'jwt-restaurant',
+) {
   constructor(
     @InjectModel(Restaurant.name)
     private restaurantModel: Model<RestaurantDocument>,
@@ -22,16 +26,32 @@ export class JwtRestaurantStrategy extends PassportStrategy(Strategy) {
 
     super({
       jwtFromRequest: (req: Request) => {
-        if (!req || !req.cookies) return null;
-        return (req.cookies as Record<string, string>)[
+        const cookieToken = (req.cookies as Record<string, string>)[
           'Fresh_V2_Access_Token_RESTAURANT'
         ];
+
+        if (cookieToken) return cookieToken;
+
+        const authHeader = req.headers?.authorization || '';
+        const [, token] = authHeader.split(' ');
+
+        if (token) {
+          try {
+            const decoded = jwt.decode(token);
+            console.log('Decoded token payload from auth header:', decoded);
+          } catch (err) {
+            console.log('Error decoding token:', err);
+          }
+        }
+
+        return token || null;
       },
       secretOrKey: jwtSecret,
+      passReqToCallback: true,
     });
   }
 
-  async validate(payload: { sub: string }): Promise<Restaurant> {
+  async validate(_req: Request, payload: { sub: string }): Promise<Restaurant> {
     const restaurant = await this.restaurantModel
       .findById(payload.sub)
       .select('-password');
