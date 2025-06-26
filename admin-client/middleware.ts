@@ -2,16 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { sealData, unsealData } from "iron-session";
 import { sessionOptions } from "./lib/session-options";
 import ServerEndpoint from "./lib/server-endpoint";
+import { removeSessionOnLogout } from "./lib/remove-session";
 
 const AUTH_TOKEN_COOKIE = "Fresh_V2_Access_Token_RESTAURANT";
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (pathname === "/login") {
-    return NextResponse.next();
-  }
-
   const token = request.cookies.get(AUTH_TOKEN_COOKIE)?.value;
   const sealedSession = request.cookies.get(sessionOptions.cookieName)?.value;
 
@@ -33,7 +28,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!token) {
-    response.cookies.delete(sessionOptions.cookieName);
+    await removeSessionOnLogout();
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -62,7 +57,7 @@ export async function middleware(request: NextRequest) {
       new URL("/login", request.url)
     );
 
-    response.cookies.delete(sessionOptions.cookieName);
+    await removeSessionOnLogout();
 
     return redirectResponse;
   }

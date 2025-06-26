@@ -5,7 +5,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Restaurant, RestaurantDocument } from 'src/schemas/restaurant.schema';
 import { Request } from 'express';
 import { Model } from 'mongoose';
-import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class JwtRestaurantStrategy extends PassportStrategy(
@@ -34,15 +33,6 @@ export class JwtRestaurantStrategy extends PassportStrategy(
 
         const authHeader = req.headers?.authorization || '';
         const [, token] = authHeader.split(' ');
-
-        if (token) {
-          try {
-            const decoded = jwt.decode(token);
-            console.log('Decoded token payload from auth header:', decoded);
-          } catch (err) {
-            console.log('Error decoding token:', err);
-          }
-        }
 
         return token || null;
       },

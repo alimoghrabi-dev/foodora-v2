@@ -1,11 +1,19 @@
 import { AuthBG } from "@/assets/assets";
+import { getRestaurantSession } from "@/lib/get-user";
+import { redirect } from "next/navigation";
 import Image from "next/image";
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const restaurant = await getRestaurantSession();
+
+  if (restaurant) {
+    redirect("/");
+  }
+
   return (
     <div className="w-full min-h-screen relative flex flex-col items-center justify-center gap-y-8 overflow-hidden">
       <Image

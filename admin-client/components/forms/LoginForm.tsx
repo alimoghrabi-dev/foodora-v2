@@ -18,7 +18,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
-import { loginAdminAction } from "@/lib/actions/client-actions";
+import { loginAdminAction } from "@/lib/actions/client.actions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { z } from "zod";

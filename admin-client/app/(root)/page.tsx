@@ -1,8 +1,13 @@
-import { getUserFromCookie } from "@/lib/get-user";
 import React from "react";
+import { getRestaurantSession } from "@/lib/get-user";
+import NotPublishedBanner from "@/components/banners/NotPublishedBanner";
 
 export default async function HomePage() {
-  const user = await getUserFromCookie();
+  const restaurant = await getRestaurantSession();
 
-  return <div className="w-full">{JSON.stringify(user)}</div>;
+  return (
+    <div className="w-full">
+      {!restaurant?.isPublished && <NotPublishedBanner />}
+    </div>
+  );
 }
