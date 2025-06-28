@@ -1,6 +1,7 @@
 import {
   AddMenuItemValidationSchema,
   LoginValidationSchema,
+  PublishRestaurantValidationSchema,
 } from "../validators";
 import { removeSessionOnLogout } from "../remove-session";
 import ServerEndpoint from "../server-endpoint";
@@ -117,6 +118,67 @@ export const getClientMenuItems = async () => {
     }
 
     return response.data.menuItems;
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const publishRestaurantAction = async (
+  data: z.infer<typeof PublishRestaurantValidationSchema>
+) => {
+  try {
+    const parsedData = PublishRestaurantValidationSchema.parse(data);
+
+    const formData = new FormData();
+
+    formData.append("name", parsedData.name);
+    formData.append("description", parsedData.description);
+    formData.append("cuisine", parsedData.cuisine);
+
+    formData.append("address[street]", parsedData.address.street);
+    formData.append("address[city]", parsedData.address.city);
+    formData.append("address[state]", parsedData.address.state);
+    formData.append("address[zipCode]", parsedData.address.zipCode);
+    formData.append("address[country]", parsedData.address.country);
+    if (parsedData.address.latitude !== undefined)
+      formData.append("address[latitude]", String(parsedData.address.latitude));
+    if (parsedData.address.longitude !== undefined)
+      formData.append(
+        "address[longitude]",
+        String(parsedData.address.longitude)
+      );
+
+    Object.entries(parsedData.openingHours).forEach(([day, hours]) => {
+      formData.append(`openingHours[${day}][open]`, hours.open || "");
+      formData.append(`openingHours[${day}][close]`, hours.close || "");
+    });
+
+    formData.append("phoneNumber", parsedData.phoneNumber);
+    if (parsedData.website) {
+      formData.append("website", parsedData.website);
+    }
+
+    formData.append("logo", parsedData.logo);
+    formData.append("coverImage", parsedData.coverImage);
+
+    const response = await ServerEndpoint.post(
+      "/admin-restaurant/publish",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (response.status !== 201) {
+      throw new Error(response.data.message || "Something went wrong");
+    }
   } catch (error) {
     console.error(error);
     if (axios.isAxiosError(error)) {

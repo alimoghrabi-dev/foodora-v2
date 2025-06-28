@@ -22,7 +22,11 @@ export default async function RootLayout({
     >
       <GrainyBackgroundWrapper>
         <QueryWrapper>
-          <AdminSidebar />
+          <AdminSidebar
+            logo={restaurant?.logo}
+            restaurantFirstNameLetter={restaurant?.name.charAt(0) || "L"}
+            isPublished={restaurant?.isPublished || false}
+          />
         </QueryWrapper>
         <ScrollArea className="flex-1 ml-auto transition-all py-4 mt-0 mb-0 mr-0 sm:mt-3.5 sm:mb-3.5 sm:mr-3.5 bg-white dark:bg-[#0d0d0f] shadow-md rounded-none sm:rounded-lg overflow-hidden">
           <AdminNavbar isPublished={restaurant?.isPublished || false} />

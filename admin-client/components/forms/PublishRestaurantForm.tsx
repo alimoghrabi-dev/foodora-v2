@@ -17,12 +17,16 @@ import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
 import NumberInput from "../shared/NumberInput";
 import { Button } from "../ui/button";
-import { LinkIcon } from "lucide-react";
+import { LinkIcon, Loader2 } from "lucide-react";
 import ImageFileInput from "../shared/ImageFileInput";
 import CoverImageFileInput from "../shared/CoverImageFileInput";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { publishRestaurantAction } from "@/lib/actions/client.actions";
+import { refetchSessionCookie } from "@/lib/session-updates";
 
 const days = [
   "monday",
@@ -80,6 +84,29 @@ const PublishRestaurantForm: React.FC<{
     router.push("/verify-email");
   };
 
+  const { mutate: publishRestaurantMutation, isPending } = useMutation({
+    mutationFn: async (
+      data: z.infer<typeof PublishRestaurantValidationSchema>
+    ) => {
+      await publishRestaurantAction(data);
+    },
+    onSuccess: async () => {
+      await refetchSessionCookie();
+
+      router.push("/");
+      toast.success(
+        "Your restaurant has been published successfully, users can now find you!"
+      );
+      form.reset();
+    },
+    onError: (error) => {
+      toast.error(
+        error.message ||
+          "Something went wrong while publishing your restaurant."
+      );
+    },
+  });
+
   useEffect(() => {
     form.setValue("name", name);
     form.setValue("description", description);
@@ -89,7 +116,7 @@ const PublishRestaurantForm: React.FC<{
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => console.log(data))}
+        onSubmit={form.handleSubmit((data) => publishRestaurantMutation(data))}
         className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4"
         method="POST"
         noValidate
@@ -388,9 +415,9 @@ const PublishRestaurantForm: React.FC<{
         </div>
         <div className="w-full h-full border-t lg:border-t-0 lg:border-l border-neutral-300 dark:border-neutral-800 pt-4 lg:pt-0 lg:pl-4">
           <div className="w-full space-y-5 p-4 rounded-md bg-neutral-50 dark:bg-neutral-950/50 border border-neutral-300 dark:border-neutral-800">
-            <h4 className="flex items-center gap-x-1.5 text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+            <h4 className="flex items-center gap-x-1.5 text-lg sm:text-xl font-semibold text-neutral-800 dark:text-neutral-200">
               Opening Hours
-              <p className="text-sm font-normal text-neutral-600 dark:text-neutral-400">
+              <p className="text-[13px] sm:text-sm font-normal text-neutral-600 dark:text-neutral-400">
                 (Empty days will be counted as closed)
               </p>
             </h4>
@@ -512,10 +539,14 @@ const PublishRestaurantForm: React.FC<{
 
           <Button
             type="submit"
-            disabled={!isEmailVerified}
+            disabled={!isEmailVerified || isPending}
             className="w-[375px] text-lg py-6 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Publish Your Restaurant
+            {isPending ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              "Publish Your Restaurant"
+            )}
           </Button>
         </div>
       </form>

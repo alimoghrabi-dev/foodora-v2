@@ -12,7 +12,7 @@ export default async function MenuPage() {
   return (
     <section className="w-full flex flex-col gap-y-2">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold text-neutral-800 dark:text-neutral-200">
+        <h2 className="text-xl sm:text-2xl font-semibold text-neutral-800 dark:text-neutral-200">
           Menu Items
         </h2>
         <Link

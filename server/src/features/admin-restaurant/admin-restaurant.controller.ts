@@ -9,6 +9,7 @@ import {
   Post,
   Res,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -19,8 +20,12 @@ import { Response } from 'express';
 import { IRestaurant } from 'types/nest';
 import { Restaurant } from 'decorators/restaurant.decorator';
 import { JwtRestaurantGuard } from 'src/guards/jwt-restaurant.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import { CreateMenuItemDto } from './dtos/create-menu-item.dto';
+import { PublishRestaurantDto } from './dtos/publish-restaurant.dto';
 
 @Controller('admin-restaurant')
 export class AdminRestaurantController {
@@ -104,6 +109,35 @@ export class AdminRestaurantController {
     return await this.adminRestaurantService.verifyEmailService(
       restaurant,
       token,
+    );
+  }
+
+  @Post('publish')
+  @HttpCode(201)
+  @UseGuards(JwtRestaurantGuard)
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'logo', maxCount: 1 },
+      { name: 'coverImage', maxCount: 1 },
+    ]),
+  )
+  async publishRestaurant(
+    @Body() publishRestaurantDto: PublishRestaurantDto,
+    @UploadedFiles()
+    files: {
+      logo?: Express.Multer.File[];
+      coverImage?: Express.Multer.File[];
+    },
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    const logo = files.logo?.[0];
+    const coverImage = files.coverImage?.[0];
+
+    return await this.adminRestaurantService.publishRestaurant(
+      publishRestaurantDto,
+      logo,
+      coverImage,
+      restaurant,
     );
   }
 

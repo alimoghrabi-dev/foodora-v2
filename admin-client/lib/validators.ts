@@ -157,3 +157,15 @@ export const PublishRestaurantValidationSchema = z.object({
   logo: imageSchema,
   coverImage: imageSchema,
 });
+
+export const OpeningHoursChangerValidationSchema = z.object({
+  openingHours: z.object({
+    monday: dailyHoursSchema,
+    tuesday: dailyHoursSchema,
+    wednesday: dailyHoursSchema,
+    thursday: dailyHoursSchema,
+    friday: dailyHoursSchema,
+    saturday: dailyHoursSchema,
+    sunday: dailyHoursSchema,
+  }),
+});

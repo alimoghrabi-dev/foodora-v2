@@ -1,8 +1,11 @@
 import {
   ConflictException,
+  FileTypeValidator,
   Injectable,
   InternalServerErrorException,
+  MaxFileSizeValidator,
   NotFoundException,
+  ParseFilePipe,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -19,6 +22,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import * as sharp from 'sharp';
 import { emailVerificationTemplate } from 'src/lib/email/templates/email-verification.template';
+import { PublishRestaurantDto } from './dtos/publish-restaurant.dto';
 
 @Injectable()
 export class AdminRestaurantService {
@@ -173,6 +177,127 @@ export class AdminRestaurantService {
     }
   }
 
+  async publishRestaurant(
+    publishRestaurantDto: PublishRestaurantDto,
+    logo: Express.Multer.File | undefined,
+    coverImage: Express.Multer.File | undefined,
+    restaurant: IRestaurant,
+  ) {
+    const {
+      name,
+      description,
+      cuisine,
+      address,
+      openingHours,
+      phoneNumber,
+      website,
+    } = publishRestaurantDto;
+
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/jpg',
+      'image/webp',
+    ];
+    try {
+      if (!logo) throw new NotFoundException('Logo is required');
+      if (!coverImage) throw new NotFoundException('Cover image is required');
+
+      const validateFile = async (
+        file: Express.Multer.File | undefined,
+        name: string,
+      ) => {
+        const pipe = new ParseFilePipe({
+          validators: [
+            new MaxFileSizeValidator({
+              maxSize: 10 * 1024 * 1024,
+              message: `${name} must be less than 10MB`,
+            }),
+            new FileTypeValidator({
+              fileType: new RegExp(
+                allowedMimeTypes.join('|').replace(/\//g, '\\/'),
+              ),
+            }),
+          ],
+        });
+
+        await pipe.transform(file);
+      };
+
+      await Promise.all([
+        validateFile(logo, 'Logo'),
+        validateFile(coverImage, 'Cover Image'),
+      ]);
+
+      const [compressedLogo, compressedCoverImage] = await Promise.all([
+        sharp(logo.buffer)
+          .resize({
+            width: 150,
+            height: 150,
+            fit: 'contain',
+            background: { r: 255, g: 255, b: 255, alpha: 0 },
+          })
+          .toFormat('webp')
+          .webp({ quality: 80 })
+          .toBuffer(),
+
+        sharp(coverImage.buffer)
+          .resize({
+            width: 1200,
+            height: 600,
+            fit: 'cover',
+            position: 'center',
+          })
+          .toFormat('webp')
+          .webp({ quality: 80 })
+          .toBuffer(),
+      ]);
+
+      const logoFileName = `menu-items/${restaurant.name}/${Date.now()}-${logo?.originalname}`;
+      const coverImageFileName = `menu-items/${restaurant.name}/${Date.now()}-${coverImage?.originalname}`;
+
+      const [logoUrl, coverImageUrl] = await Promise.all([
+        this.s3Service.uploadFile(compressedLogo, logoFileName, 'image/webp'),
+        this.s3Service.uploadFile(
+          compressedCoverImage,
+          coverImageFileName,
+          'image/webp',
+        ),
+      ]);
+
+      await this.restaurantModel.updateOne(
+        { _id: restaurant._id },
+        {
+          $set: {
+            name,
+            description,
+            cuisine,
+            address,
+            openingHours,
+            phoneNumber,
+            website,
+            logo: logoUrl,
+            coverImage: coverImageUrl,
+            isPublished: true,
+          },
+        },
+      );
+
+      return {
+        message: 'Restaurant Publsihed Successfully',
+      };
+    } catch (error) {
+      console.error(error);
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      } else {
+        throw new InternalServerErrorException(
+          'Failed to send verification email',
+        );
+      }
+    }
+  }
+
   async createNewMenuItem(
     createMenuItemDto: CreateMenuItemDto,
     file: Express.Multer.File,
@@ -217,7 +342,7 @@ export class AdminRestaurantService {
         imageUrl = await this.s3Service.uploadFile(
           compressedImage,
           filename,
-          file.mimetype,
+          'image/webp',
         );
       }
 

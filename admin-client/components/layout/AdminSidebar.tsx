@@ -20,6 +20,7 @@ import { Loader2, LogOut } from "lucide-react";
 import { logout } from "@/lib/actions/client.actions";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const sidebarVariants = {
   expanded: {
@@ -53,7 +54,11 @@ const contentVariants = {
   exit: { opacity: 0, x: -10, transition: { duration: 0.2 } },
 };
 
-const AdminSidebar: React.FC = () => {
+const AdminSidebar: React.FC<{
+  logo: string | undefined;
+  restaurantFirstNameLetter: string;
+  isPublished: boolean;
+}> = ({ logo, restaurantFirstNameLetter, isPublished }) => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -91,17 +96,37 @@ const AdminSidebar: React.FC = () => {
                 }
               )}
             >
-              {!collapsed && (
-                <motion.div
-                  key="nav-content"
-                  variants={contentVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                >
-                  LOGO
-                </motion.div>
-              )}
+              {!collapsed ? (
+                !logo ? (
+                  <motion.div
+                    key="nav-content"
+                    variants={contentVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="size-10 rounded-full shadow bg-primary text-neutral-100 font-semibold uppercase text-xl flex items-center justify-center"
+                  >
+                    {restaurantFirstNameLetter}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="nav-content"
+                    variants={contentVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="size-10 rounded-full relative shadow"
+                  >
+                    <Image
+                      src={logo}
+                      alt="logo"
+                      fill
+                      priority
+                      className="object-cover rounded-full"
+                    />
+                  </motion.div>
+                )
+              ) : null}
               <TooltipProvider delayDuration={100} skipDelayDuration={50}>
                 <Tooltip delayDuration={100}>
                   <TooltipTrigger asChild>
@@ -150,6 +175,8 @@ const AdminSidebar: React.FC = () => {
                               "hover:bg-white/40 hover:dark:bg-neutral-800/40 hover:shadow-sm":
                                 !isActive,
                               "justify-center": collapsed,
+                              "pointer-events-none opacity-50":
+                                link.isDisabledByPublish && !isPublished,
                             }
                           )}
                         >
