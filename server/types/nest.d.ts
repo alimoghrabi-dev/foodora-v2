@@ -17,6 +17,7 @@ interface IRestaurant extends Document {
   email: string;
   password: string;
   isEmailVerified: boolean;
+  isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

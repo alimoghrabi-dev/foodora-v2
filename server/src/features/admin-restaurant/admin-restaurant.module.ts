@@ -9,12 +9,14 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { S3Service } from 'src/lib/s3.service';
 import { EmailModule } from 'src/lib/email/email.module';
+import { Category, CategorySchema } from 'src/schemas/category.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Restaurant.name, schema: RestaurantSchema },
       { name: Item.name, schema: ItemSchema },
+      { name: Category.name, schema: CategorySchema },
     ]),
     PassportModule,
     JwtModule.register({}),

@@ -59,11 +59,15 @@ interface IItem {
   title: string;
   description: string;
   price: number;
-  category: string;
+  category: {
+    _id: string;
+    name: string;
+  };
   tags: string[];
   ingredients: string[];
   imageUrl: string;
   variants: {
+    _id: string;
     name: string;
     price: number;
     isAvailable: boolean;

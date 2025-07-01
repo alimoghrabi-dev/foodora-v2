@@ -49,3 +49,19 @@ export function formatNumber(num: number | undefined) {
     return (num! / 1000000000).toFixed(1) + "B";
   }
 }
+
+export function formatDateToReadableString(dateInput: string | Date): string {
+  const date = new Date(dateInput);
+
+  if (isNaN(date.getTime())) {
+    throw new Error("Invalid date provided");
+  }
+
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    day: "2-digit",
+    year: "numeric",
+  };
+
+  return new Intl.DateTimeFormat("en-US", options).format(date);
+}

@@ -11,7 +11,7 @@ import Link from "next/link";
 const MenuItemsQueryMapper: React.FC<{
   initialData: IItem[];
 }> = ({ initialData }) => {
-  const { data, isRefetching } = useQuery({
+  const { data, isPending, isRefetching } = useQuery({
     queryKey: ["MENU_ITEMS"],
     queryFn: getClientMenuItems,
     initialData,
@@ -21,7 +21,7 @@ const MenuItemsQueryMapper: React.FC<{
 
   return (
     <div className="w-full flex flex-col gap-y-4">
-      {isRefetching ? (
+      {isPending || isRefetching ? (
         <div></div>
       ) : data?.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-[50vh] text-center px-6">

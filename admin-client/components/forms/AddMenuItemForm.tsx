@@ -19,15 +19,31 @@ import NumberInput from "../shared/NumberInput";
 import ArrayInput from "../shared/ArrayInput";
 import ImageFileInput from "../shared/ImageFileInput";
 import { Button } from "../ui/button";
-import { useMutation } from "@tanstack/react-query";
-import { createMenuItemAction } from "@/lib/actions/client.actions";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  createMenuItemAction,
+  getCategories,
+} from "@/lib/actions/client.actions";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 const AddMenuItemForm: React.FC = () => {
   const router = useRouter();
+
+  const { data: categories, isPending: isGettingCategories } = useQuery({
+    queryKey: ["CATEGORIES"],
+    queryFn: getCategories,
+    refetchOnWindowFocus: false,
+  });
 
   const form = useForm<z.infer<typeof AddMenuItemValidationSchema>>({
     resolver: zodResolver(AddMenuItemValidationSchema),
@@ -151,15 +167,30 @@ const AddMenuItemForm: React.FC = () => {
                   Category <p className="text-blue-500">*</p>
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    type="text"
+                  <Select
+                    disabled={isGettingCategories}
                     value={field.value}
-                    placeholder="category of the item"
-                    className="w-full border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all"
-                    onChange={(e) =>
-                      field.onChange(sanitizeInput(e.target.value))
-                    }
-                  />
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className="w-full border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all cursor-pointer">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.length === 0 ? (
+                        <div className="w-full text-center text-[15px] font-normal text-muted-foreground py-3">
+                          No Categories Found
+                        </div>
+                      ) : (
+                        categories?.map(
+                          (cat: { _id: string; name: string }) => (
+                            <SelectItem key={cat._id} value={cat._id}>
+                              {cat.name}
+                            </SelectItem>
+                          )
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>

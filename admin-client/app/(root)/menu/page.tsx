@@ -1,9 +1,17 @@
 import MenuItemsError from "@/components/errors/MenuItemsError";
 import QueryWrapper from "@/components/providers/query-wrapper";
+import ManageCategoriesDialog from "@/components/query-mappers/ManageCategoriesDialog";
 import MenuItemsQueryMapper from "@/components/query-mappers/MenuItemsQueryMapper";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { getMenuItems } from "@/lib/actions/server.actions";
-import { Ghost, PlusCircle } from "lucide-react";
+import { Ghost, PlusCircle, Tag } from "lucide-react";
 import Link from "next/link";
 
 export default async function MenuPage() {
@@ -11,18 +19,41 @@ export default async function MenuPage() {
 
   return (
     <section className="w-full flex flex-col gap-y-2">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-start mb-6">
         <h2 className="text-xl sm:text-2xl font-semibold text-neutral-800 dark:text-neutral-200">
           Menu Items
         </h2>
-        <Link
-          href="/menu/add"
-          className="gap-2 text-base font-medium text-white bg-primary hover:bg-primary/85 transition-all shadow-md flex items-center px-3 py-1.5 rounded-sm"
-        >
-          <PlusCircle size={20} />
-          Add Menu Item
-        </Link>
+        <div className="flex flex-col gap-2">
+          <Link
+            href="/menu/add"
+            className="gap-2 text-base font-medium text-white bg-primary hover:bg-primary/85 transition-all shadow-md flex items-center justify-center px-3 py-1.5 rounded-sm"
+          >
+            <PlusCircle size={20} />
+            Add Menu Item
+          </Link>
+          <Dialog>
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                className="cursor-pointer shadow gap-2 text-base font-medium text-neutral-800 dark:text-neutral-100 border border-neutral-300 dark:border-neutral-700/80 bg-white dark:bg-transparent hover:bg-neutral-100/40 hover:dark:bg-neutral-900 transition-all flex items-center justify-center px-3 py-1.5 rounded-sm"
+              >
+                <Tag size={18} />
+                Manage Categories
+              </button>
+            </DialogTrigger>
+            <DialogContent aria-describedby={undefined}>
+              <DialogHeader>
+                <DialogTitle>Manage Categories</DialogTitle>
+                <div className="w-14 h-px bg-neutral-300 dark:bg-neutral-800" />
+              </DialogHeader>
+              <QueryWrapper>
+                <ManageCategoriesDialog />
+              </QueryWrapper>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
       {result?.error ? (
         <MenuItemsError />
       ) : result?.items.length === 0 ? (

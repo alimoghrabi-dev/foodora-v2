@@ -120,3 +120,9 @@ export class PublishRestaurantDto {
   @IsUrl({}, { message: 'Invalid website URL' })
   website?: string;
 }
+
+export class OpeningHoursDto {
+  @ValidateNested()
+  @Type(() => OpeningHours)
+  openingHours: OpeningHours;
+}

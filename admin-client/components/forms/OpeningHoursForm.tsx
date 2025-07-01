@@ -8,6 +8,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Input } from "../ui/input";
 import { z } from "zod";
 import { Button } from "../ui/button";
+import { useMutation } from "@tanstack/react-query";
+import { updateRestaurantOpeningHours } from "@/lib/actions/client.actions";
+import { refetchSessionCookie } from "@/lib/session-updates";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const days = [
   "monday",
@@ -41,13 +46,43 @@ const OpeningHoursForm: React.FC<{
     },
   });
 
+  const { mutate: updateRestaurantOpeningHoursMutation, isPending } =
+    useMutation({
+      mutationFn: async (
+        data: z.infer<typeof OpeningHoursChangerValidationSchema>
+      ) => {
+        await updateRestaurantOpeningHours(data);
+      },
+      onSuccess: async () => {
+        await refetchSessionCookie();
+
+        toast.success(
+          "Your restaurant opening hours has been updated successfully."
+        );
+        form.reset();
+      },
+      onError: (error) => {
+        toast.error(
+          error.message ||
+            "Something went wrong while updating your restaurant opening hours."
+        );
+      },
+    });
+
   useEffect(() => {
     form.setValue("openingHours", openingHours);
   }, [form, openingHours]);
 
   return (
     <Form {...form}>
-      <form method="POST" className="w-full space-y-4" noValidate>
+      <form
+        onSubmit={form.handleSubmit((data) =>
+          updateRestaurantOpeningHoursMutation(data)
+        )}
+        method="PUT"
+        className="w-full space-y-4"
+        noValidate
+      >
         <div className="w-full space-y-5 p-4 rounded-md bg-neutral-50 dark:bg-neutral-950/50 border border-neutral-300 dark:border-neutral-800">
           <h4 className="flex items-center gap-x-1.5 text-lg sm:text-xl font-semibold text-neutral-800 dark:text-neutral-200">
             Opening Hours
@@ -117,8 +152,12 @@ const OpeningHoursForm: React.FC<{
             })}
           </div>
         </div>
-        <Button type="submit" className="text-base py-5 w-36 cursor-pointer">
-          Update
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="text-base py-5 w-36 cursor-pointer"
+        >
+          {isPending ? <Loader2 className="size-5 animate-spin" /> : "Update"}
         </Button>
       </form>
     </Form>

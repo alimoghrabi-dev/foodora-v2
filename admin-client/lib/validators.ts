@@ -76,7 +76,7 @@ export const AddMenuItemValidationSchema = z.object({
   variants: z
     .array(
       z.object({
-        name: z.string().min(1, "Variant name is required"),
+        name: z.string().trim().min(1, "Variant name is required"),
         price: z.number().min(0).optional(),
         isAvailable: z.boolean().default(true).optional(),
       })
@@ -168,4 +168,10 @@ export const OpeningHoursChangerValidationSchema = z.object({
     saturday: dailyHoursSchema,
     sunday: dailyHoursSchema,
   }),
+});
+
+export const EditItemVariantValidationSchema = z.object({
+  name: z.string().trim().min(1, "Variant name is required"),
+  price: z.number().min(0).optional(),
+  isAvailable: z.boolean().default(true).optional(),
 });

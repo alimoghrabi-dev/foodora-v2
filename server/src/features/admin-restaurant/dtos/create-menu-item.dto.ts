@@ -8,7 +8,6 @@ import {
   IsString,
   MaxLength,
   Min,
-  ValidateNested,
 } from 'class-validator';
 
 export class VariantDto {
@@ -62,7 +61,6 @@ export class CreateMenuItemDto {
 
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
   @Type(() => VariantDto)
   variants?: VariantDto[];
 }

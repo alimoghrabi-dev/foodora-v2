@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Star, ImageOff } from "lucide-react";
 import { cn, formatNumber, formatPriceWithAbbreviation } from "@/lib/utils";
 import Link from "next/link";
+import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import VariantDialogManagement from "../query-mappers/VariantDialogManagement";
+import QueryWrapper from "../providers/query-wrapper";
 
 interface Props {
   item: IItem;
@@ -76,7 +80,7 @@ const MenuItemCard: React.FC<Props> = ({ item }) => {
           <span className="font-medium text-primary">
             {formatPriceWithAbbreviation(item.price)}
           </span>
-          <Badge variant="secondary">{item.category}</Badge>
+          <Badge variant="secondary">{item.category.name}</Badge>
           {item.isEdited && (
             <Badge variant="outline" className="bg-primary text-white">
               Edited
@@ -85,10 +89,25 @@ const MenuItemCard: React.FC<Props> = ({ item }) => {
         </div>
 
         {item.variants?.length > 0 && (
-          <div className="w-full flex items-center justify-center border-t pt-3">
-            <p className="text-primary text-sm font-medium cursor-pointer hover:underline transition-all hover:opacity-85">
-              View Variants ({item.variants.length})
-            </p>
+          <div className="w-full flex items-center justify-center border-t pt-3.5">
+            <Dialog>
+              <DialogTrigger asChild>
+                <p className="text-primary text-sm font-medium cursor-pointer hover:underline transition-all hover:opacity-85">
+                  View Variants ({item.variants.length})
+                </p>
+              </DialogTrigger>
+              <DialogContent aria-describedby={undefined}>
+                <DialogHeader>
+                  <DialogTitle className="capitalize">
+                    {item.title} Variants - {item.variants.length}
+                  </DialogTitle>
+                  <div className="w-24 h-px bg-neutral-300 dark:bg-neutral-900" />
+                </DialogHeader>
+                <QueryWrapper>
+                  <VariantDialogManagement variants={item.variants} />
+                </QueryWrapper>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </div>

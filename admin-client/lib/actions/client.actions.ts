@@ -1,6 +1,8 @@
 import {
   AddMenuItemValidationSchema,
+  EditItemVariantValidationSchema,
   LoginValidationSchema,
+  OpeningHoursChangerValidationSchema,
   PublishRestaurantValidationSchema,
 } from "../validators";
 import { removeSessionOnLogout } from "../remove-session";
@@ -76,7 +78,9 @@ export const createMenuItemAction = async (
     }
 
     if (parsedData.variants && parsedData.variants.length > 0) {
-      formData.append("variants", JSON.stringify(data.variants));
+      parsedData.variants.forEach((variant) =>
+        formData.append("variants", JSON.stringify(variant))
+      );
     }
 
     if (parsedData.image) {
@@ -118,6 +122,30 @@ export const getClientMenuItems = async () => {
     }
 
     return response.data.menuItems;
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const getCategories = async () => {
+  try {
+    const response = await ServerEndpoint.get(
+      "/admin-restaurant/get-categories"
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        response.data.message ||
+          "Something went wrong while getting your categories!"
+      );
+    }
+
+    return response.data;
   } catch (error) {
     console.error(error);
     if (axios.isAxiosError(error)) {
@@ -172,6 +200,168 @@ export const publishRestaurantAction = async (
       {
         headers: {
           "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (response.status !== 201) {
+      throw new Error(response.data.message || "Something went wrong");
+    }
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const updateRestaurantOpeningHours = async (
+  data: z.infer<typeof OpeningHoursChangerValidationSchema>
+) => {
+  try {
+    const parsedData = OpeningHoursChangerValidationSchema.parse(data);
+
+    const response = await ServerEndpoint.put(
+      "/admin-restaurant/update-opening-hours",
+      {
+        openingHours: parsedData.openingHours,
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        response.data.message ||
+          "Something went wrong while updating your opening hours!"
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const createCategory = async (name: string) => {
+  try {
+    const response = await ServerEndpoint.post(
+      "/admin-restaurant/create-category",
+      { name },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status !== 201) {
+      throw new Error(response.data.message || "Something went wrong");
+    }
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const editCategory = async (categoryId: string, name: string) => {
+  try {
+    const response = await ServerEndpoint.put(
+      `/admin-restaurant/edit-category/${categoryId}`,
+      { name },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(response.data.message || "Something went wrong");
+    }
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const deleteCategory = async (categoryId: string) => {
+  try {
+    const response = await ServerEndpoint.delete(
+      `/admin-restaurant/delete-category/${categoryId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status !== 201) {
+      throw new Error(response.data.message || "Something went wrong");
+    }
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const editItemVariant = async (
+  variantId: string,
+  data: z.infer<typeof EditItemVariantValidationSchema>
+) => {
+  try {
+    const parsedData = EditItemVariantValidationSchema.parse(data);
+
+    const response = await ServerEndpoint.put(
+      `/admin-restaurant/edit-variant/${variantId}`,
+      {
+        ...parsedData,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status !== 200) {
+      throw new Error(
+        response.data.message ||
+          "Something went wrong while updating your variant!"
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const deleteVariant = async (variantId: string) => {
+  try {
+    const response = await ServerEndpoint.delete(
+      `/admin-restaurant/delete-variant/${variantId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
         },
       }
     );

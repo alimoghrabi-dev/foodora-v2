@@ -17,8 +17,8 @@ export class Item {
   @Prop({ required: true })
   price: number;
 
-  @Prop({ required: true })
-  category: string;
+  @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
+  category: Types.ObjectId;
 
   @Prop([String])
   tags: string[];

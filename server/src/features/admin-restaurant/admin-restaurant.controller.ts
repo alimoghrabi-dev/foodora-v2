@@ -1,12 +1,15 @@
 import {
   Body,
   Controller,
+  Delete,
   FileTypeValidator,
   Get,
   HttpCode,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
   Post,
+  Put,
   Res,
   UploadedFile,
   UploadedFiles,
@@ -24,8 +27,11 @@ import {
   FileFieldsInterceptor,
   FileInterceptor,
 } from '@nestjs/platform-express';
-import { CreateMenuItemDto } from './dtos/create-menu-item.dto';
-import { PublishRestaurantDto } from './dtos/publish-restaurant.dto';
+import { CreateMenuItemDto, VariantDto } from './dtos/create-menu-item.dto';
+import {
+  OpeningHoursDto,
+  PublishRestaurantDto,
+} from './dtos/publish-restaurant.dto';
 
 @Controller('admin-restaurant')
 export class AdminRestaurantController {
@@ -141,6 +147,72 @@ export class AdminRestaurantController {
     );
   }
 
+  @Put('update-opening-hours')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async updateRestaurantOpeningHours(
+    @Body() updateRestaurantOpeningHoursDto: OpeningHoursDto,
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    return await this.adminRestaurantService.updateRestaurantOpeningHours(
+      updateRestaurantOpeningHoursDto,
+      restaurant,
+    );
+  }
+
+  // MENU ==>
+
+  @Post('create-category')
+  @HttpCode(201)
+  @UseGuards(JwtRestaurantGuard)
+  async createCategory(
+    @Body() body: { name: string },
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    const { name } = body;
+
+    return await this.adminRestaurantService.createCategory(name, restaurant);
+  }
+
+  @Get('get-categories')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async getRestaurantCategories(@Restaurant() restaurant: IRestaurant) {
+    return await this.adminRestaurantService.getRestaurantCategories(
+      restaurant,
+    );
+  }
+
+  @Put('edit-category/:categoryId')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async editCategory(
+    @Param('categoryId') categoryId: string,
+    @Body() body: { name: string },
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    const { name } = body;
+
+    return await this.adminRestaurantService.editCategory(
+      name,
+      categoryId,
+      restaurant,
+    );
+  }
+
+  @Delete('delete-category/:categoryId')
+  @HttpCode(201)
+  @UseGuards(JwtRestaurantGuard)
+  async deleteCategory(
+    @Param('categoryId') categoryId: string,
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    return await this.adminRestaurantService.deleteCategory(
+      categoryId,
+      restaurant,
+    );
+  }
+
   @Post('create-item')
   @HttpCode(201)
   @UseGuards(JwtRestaurantGuard)
@@ -184,5 +256,33 @@ export class AdminRestaurantController {
     return {
       menuItems,
     };
+  }
+
+  @Put('edit-variant/:variantId')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async editItemVariant(
+    @Body() variantDto: VariantDto,
+    @Param('variantId') variantId: string,
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    return await this.adminRestaurantService.editItemVariant(
+      variantId,
+      variantDto,
+      restaurant,
+    );
+  }
+
+  @Delete('delete-variant/:variantId')
+  @HttpCode(201)
+  @UseGuards(JwtRestaurantGuard)
+  async deleteVariant(
+    @Param('variantId') variantId: string,
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    return await this.adminRestaurantService.deleteVariant(
+      variantId,
+      restaurant,
+    );
   }
 }
