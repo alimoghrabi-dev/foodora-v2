@@ -1,5 +1,10 @@
 import AddMenuItemForm from "@/components/forms/AddMenuItemForm";
 import QueryWrapper from "@/components/providers/query-wrapper";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Foodora Admin | Add Menu Item",
+};
 
 export default function AddMenuPage() {
   return (

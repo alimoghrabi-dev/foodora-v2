@@ -11,10 +11,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { getMenuItems } from "@/lib/actions/server.actions";
+import { getRestaurantSession } from "@/lib/get-user";
 import { Ghost, PlusCircle, Tag } from "lucide-react";
+import { Metadata } from "next";
 import Link from "next/link";
 
+export const metadata: Metadata = {
+  title: "Foodora Admin | Menu",
+};
+
 export default async function MenuPage() {
+  const restaurant = await getRestaurantSession();
   const result = await getMenuItems();
 
   return (
@@ -74,7 +81,10 @@ export default async function MenuPage() {
         </div>
       ) : (
         <QueryWrapper>
-          <MenuItemsQueryMapper initialData={result?.items} />
+          <MenuItemsQueryMapper
+            initialData={result?.items}
+            restaurant={restaurant}
+          />
         </QueryWrapper>
       )}
     </section>

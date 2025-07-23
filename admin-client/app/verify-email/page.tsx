@@ -3,7 +3,12 @@ import ServerEndpoint from "@/lib/server-endpoint";
 import { getCurrentToken } from "@/lib/server";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Verify Email",
+};
 
 export default async function VerifyEmail() {
   const cookieStore = cookies();

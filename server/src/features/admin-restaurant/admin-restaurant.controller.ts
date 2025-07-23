@@ -8,6 +8,7 @@ import {
   MaxFileSizeValidator,
   Param,
   ParseFilePipe,
+  Patch,
   Post,
   Put,
   Res,
@@ -31,7 +32,9 @@ import { CreateMenuItemDto, VariantDto } from './dtos/create-menu-item.dto';
 import {
   OpeningHoursDto,
   PublishRestaurantDto,
+  RestaurantManagementDto,
 } from './dtos/publish-restaurant.dto';
+import { ItemSaleDto } from './dtos/apply-sale.dto';
 
 @Controller('admin-restaurant')
 export class AdminRestaurantController {
@@ -147,6 +150,35 @@ export class AdminRestaurantController {
     );
   }
 
+  @Patch('manage-restaurant')
+  @HttpCode(201)
+  @UseGuards(JwtRestaurantGuard)
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'logo', maxCount: 1 },
+      { name: 'coverImage', maxCount: 1 },
+    ]),
+  )
+  async manageRestaurant(
+    @Body() manageRestaurantDto: RestaurantManagementDto,
+    @UploadedFiles()
+    files: {
+      logo?: Express.Multer.File[];
+      coverImage?: Express.Multer.File[];
+    },
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    const logo = files.logo?.[0];
+    const coverImage = files.coverImage?.[0];
+
+    return await this.adminRestaurantService.manageRestaurant(
+      manageRestaurantDto,
+      logo,
+      coverImage,
+      restaurant,
+    );
+  }
+
   @Put('update-opening-hours')
   @HttpCode(200)
   @UseGuards(JwtRestaurantGuard)
@@ -246,6 +278,51 @@ export class AdminRestaurantController {
     };
   }
 
+  @Put('edit-item/itemId')
+  @HttpCode(201)
+  @UseGuards(JwtRestaurantGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  async editMenuItem(
+    @Param('itemId') itemId: string,
+    @Body() editMenuItemDto: CreateMenuItemDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new FileTypeValidator({
+            fileType: '.(png|jpg|jpeg|webp)',
+          }),
+          new MaxFileSizeValidator({
+            maxSize: 10 * 1024 * 1024,
+            message: 'File is too large. Max file size is 10MB',
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    await this.adminRestaurantService.editMenuItem(
+      itemId,
+      editMenuItemDto,
+      file,
+      restaurant,
+    );
+
+    return {
+      message: 'Restaurant Menu Item Updated Successfully',
+    };
+  }
+
+  @Delete('delete-item/:itemId')
+  @HttpCode(201)
+  @UseGuards(JwtRestaurantGuard)
+  async deleteMenuItem(
+    @Param('itemId') itemId: string,
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    return await this.adminRestaurantService.deleteMenuItem(itemId, restaurant);
+  }
+
   @Get('get-items')
   @HttpCode(200)
   @UseGuards(JwtRestaurantGuard)
@@ -284,5 +361,76 @@ export class AdminRestaurantController {
       variantId,
       restaurant,
     );
+  }
+
+  @Get('get-menu-item/:itemTitle')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async getMenuItemByName(
+    @Param('itemTitle') itemTitle: string,
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    return await this.adminRestaurantService.getMenuItemByName(
+      itemTitle,
+      restaurant,
+    );
+  }
+
+  // ==> Sale Management
+
+  @Patch('apply-sale/:itemId')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async appleItemSale(
+    @Body() itemSaleDto: ItemSaleDto,
+    @Param('itemId') itemId: string,
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    return await this.adminRestaurantService.applyItemSale(
+      itemId,
+      itemSaleDto,
+      restaurant,
+    );
+  }
+
+  @Patch('remove-sale/:itemId')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async removeItemSale(@Param('itemId') itemId: string) {
+    return await this.adminRestaurantService.removeItemSale(itemId);
+  }
+
+  @Get('get-sale-items')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async getOnSaleItems(@Restaurant() restaurant: IRestaurant) {
+    return await this.adminRestaurantService.getOnSaleItems(restaurant);
+  }
+
+  @Get('get-not-sale-items')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async getNotOnSaleItems(@Restaurant() restaurant: IRestaurant) {
+    return await this.adminRestaurantService.getNotOnSaleItems(restaurant);
+  }
+
+  @Patch('apply-menu-sale')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async appleMenuSale(
+    @Body() menuSaleDto: ItemSaleDto,
+    @Restaurant() restaurant: IRestaurant,
+  ) {
+    return await this.adminRestaurantService.applyMenuSale(
+      menuSaleDto,
+      restaurant,
+    );
+  }
+
+  @Patch('remove-menu-sale')
+  @HttpCode(200)
+  @UseGuards(JwtRestaurantGuard)
+  async removeMenuSale(@Restaurant() restaurant: IRestaurant) {
+    return await this.adminRestaurantService.removeMenuSale(restaurant);
   }
 }

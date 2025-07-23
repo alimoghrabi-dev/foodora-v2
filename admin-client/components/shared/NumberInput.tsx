@@ -52,7 +52,7 @@ const NumberInput: React.FC<{
       <Input
         type="number"
         placeholder="0"
-        value={value || undefined}
+        value={value || ""}
         onChange={(e) => {
           if (canBeNegative) {
             onChange(Number(sanitizeInput(e.target.value)));

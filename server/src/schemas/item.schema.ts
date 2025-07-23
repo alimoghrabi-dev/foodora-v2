@@ -52,6 +52,21 @@ export class Item {
   reviewsCount: number;
 
   @Prop({ default: false })
+  onSale: boolean;
+
+  @Prop({ enum: ['fixed', 'percentage'] })
+  saleType?: 'fixed' | 'percentage';
+
+  @Prop({ default: 0 })
+  saleAmount?: number;
+
+  @Prop()
+  saleStartDate?: Date;
+
+  @Prop()
+  saleEndDate?: Date;
+
+  @Prop({ default: false })
   isEdited: boolean;
 
   @Prop({ default: true })
@@ -59,3 +74,9 @@ export class Item {
 }
 
 export const ItemSchema = SchemaFactory.createForClass(Item);
+
+ItemSchema.index({ restaurantId: 1 });
+ItemSchema.index({ title: 1, restaurantId: 1 });
+ItemSchema.index({ restaurantId: 1, 'variants._id': 1 });
+ItemSchema.index({ onSale: 1, saleEndDate: 1 });
+ItemSchema.index({ onSale: 1, restaurantId: 1 });

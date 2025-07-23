@@ -2,11 +2,16 @@ import { getCurrentToken } from "@/lib/server";
 import ServerEndpoint from "@/lib/server-endpoint";
 import { AlertCircle, CheckCircle, ChevronLeft } from "lucide-react";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { updateEmailVerifiedInCookie } from "@/lib/session-updates";
+import { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Verify Email",
+};
 
 interface Props {
-  searchParams: { token?: string };
+  searchParams: Promise<{ token?: string }>;
 }
 
 export default async function VerificationEmailStatusPage({

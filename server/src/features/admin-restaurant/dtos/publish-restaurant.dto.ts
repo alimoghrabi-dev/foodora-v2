@@ -126,3 +126,30 @@ export class OpeningHoursDto {
   @Type(() => OpeningHours)
   openingHours: OpeningHours;
 }
+
+export class RestaurantManagementDto {
+  @IsString()
+  @IsNotEmpty({ message: 'Name is required' })
+  name: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Description is required' })
+  @MaxLength(400, { message: 'Description must be less than 400 characters' })
+  description: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Cuisine is required' })
+  cuisine: string;
+
+  @ValidateNested()
+  @Type(() => Address)
+  address: Address;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Phone number is required' })
+  phoneNumber: string;
+
+  @IsOptional()
+  @IsUrl({}, { message: 'Invalid website URL' })
+  website?: string;
+}

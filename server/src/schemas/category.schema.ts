@@ -13,3 +13,6 @@ export class Category {
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
+
+CategorySchema.index({ restaurantId: 1 });
+CategorySchema.index({ name: 1, restaurantId: 1 });

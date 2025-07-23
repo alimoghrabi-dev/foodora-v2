@@ -1,7 +1,9 @@
 import { MdRestaurantMenu } from "react-icons/md";
 import { LuLayoutDashboard } from "react-icons/lu";
-import { IoHourglassOutline } from "react-icons/io5";
+import { BiSolidOffer } from "react-icons/bi";
+import { IoHourglassOutline, IoSettings } from "react-icons/io5";
 import { FaList } from "react-icons/fa6";
+import { FaUserAlt } from "react-icons/fa";
 
 export const SideLinks = [
   {
@@ -27,5 +29,23 @@ export const SideLinks = [
     icon: FaList,
     isDisabledByPublish: true,
     href: "/orders",
+  },
+];
+
+export const ProfileSideLinks = [
+  {
+    label: "Profile Management",
+    icon: FaUserAlt,
+    href: "/profile-management",
+  },
+  {
+    label: "Settings",
+    icon: IoSettings,
+    href: "/settings",
+  },
+  {
+    label: "Sale Management",
+    icon: BiSolidOffer,
+    href: "/sale-management",
   },
 ];

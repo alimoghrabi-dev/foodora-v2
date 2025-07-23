@@ -14,7 +14,7 @@ export class Restaurant {
   @Prop({ required: true })
   description: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, index: true })
   email: string;
 
   @Prop({ required: true })
@@ -37,8 +37,8 @@ export class Restaurant {
     state: string;
     zipCode: string;
     country: string;
-    latitude: number;
-    longitude: number;
+    latitude: number | undefined;
+    longitude: number | undefined;
   };
 
   @Prop({ default: false })
@@ -88,6 +88,21 @@ export class Restaurant {
 
   @Prop()
   coverImage: string;
+
+  @Prop({ default: false })
+  onSale: boolean;
+
+  @Prop({ enum: ['fixed', 'percentage'] })
+  saleType?: 'fixed' | 'percentage';
+
+  @Prop({ default: 0 })
+  saleAmount?: number;
+
+  @Prop()
+  saleStartDate?: Date;
+
+  @Prop()
+  saleEndDate?: Date;
 
   @Prop()
   isClosed: boolean;

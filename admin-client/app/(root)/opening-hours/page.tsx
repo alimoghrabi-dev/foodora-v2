@@ -2,6 +2,11 @@ import OpeningHoursForm from "@/components/forms/OpeningHoursForm";
 import QueryWrapper from "@/components/providers/query-wrapper";
 import { getRestaurantSession } from "@/lib/get-user";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Foodora Admin | Opening Hours",
+};
 
 export default async function OpeningHoursPage() {
   const restaurant = await getRestaurantSession();

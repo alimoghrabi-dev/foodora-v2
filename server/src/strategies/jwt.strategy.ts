@@ -17,14 +17,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     super({
       jwtFromRequest: (req: Request) => {
-        if (!req || !req.cookies) return null;
-        return (req.cookies as Record<string, string>)['Fresh_V2_Access_Token'];
+        const cookieToken = (req.cookies as Record<string, string>)[
+          'Fresh_V2_Access_Token'
+        ];
+
+        if (cookieToken) return cookieToken;
+
+        const authHeader = req.headers?.authorization || '';
+        const [, token] = authHeader.split(' ');
+
+        return token || null;
       },
       secretOrKey: jwtSecret,
+      passReqToCallback: true,
     });
   }
 
-  async validate(payload: { sub: string }): Promise<User> {
+  async validate(_req: Request, payload: { sub: string }): Promise<User> {
     const user = await this.userModel.findById(payload.sub).select('-password');
 
     if (!user) {

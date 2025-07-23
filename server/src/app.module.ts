@@ -5,8 +5,9 @@ import { AuthModule } from './features/auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './features/user/user.module';
 import { ConfigModule } from '@nestjs/config';
-import * as Joi from 'joi';
 import { AdminRestaurantModule } from './features/admin-restaurant/admin-restaurant.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import * as Joi from 'joi';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AdminRestaurantModule } from './features/admin-restaurant/admin-restaur
     AuthModule,
     UserModule,
     AdminRestaurantModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

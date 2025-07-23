@@ -6,6 +6,7 @@ import {
   TbLayoutSidebarRightExpand,
   TbLayoutSidebarLeftExpand,
 } from "react-icons/tb";
+import { MdManageAccounts } from "react-icons/md";
 import {
   Tooltip,
   TooltipContent,
@@ -14,13 +15,13 @@ import {
 } from "../ui/tooltip";
 import { SideLinks } from "@/constants/constants";
 import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { Loader2, LogOut } from "lucide-react";
 import { logout } from "@/lib/actions/client.actions";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Image from "next/image";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const sidebarVariants = {
   expanded: {
@@ -213,19 +214,54 @@ const AdminSidebar: React.FC<{
             </div>
           </div>
           <div className="w-full flex flex-col gap-y-2">
+            <Link
+              href="/profile-management"
+              className={cn(
+                "w-full p-2 flex items-center justify-start border border-transparent gap-x-3.5 rounded-sm transition-all",
+                {
+                  "bg-white/70 dark:bg-neutral-950 border-neutral-300/60 dark:border-neutral-900":
+                    pathname === "/profile-management",
+                  "hover:bg-white/40 hover:dark:bg-neutral-800/40 hover:shadow-sm":
+                    pathname !== "/profile-management",
+                  "justify-center": collapsed,
+                  "pointer-events-none opacity-50": !isPublished,
+                }
+              )}
+            >
+              <MdManageAccounts
+                size={24}
+                className="text-neutral-700 dark:text-neutral-200"
+              />
+              {!collapsed && (
+                <motion.p
+                  key="nav-b-content"
+                  variants={contentVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="text-neutral-800 dark:text-neutral-200 font-medium text-[17px]"
+                >
+                  Manage
+                </motion.p>
+              )}
+            </Link>
+            <div className="w-full h-px bg-neutral-400/50 dark:bg-neutral-700/50" />
             <button
               type="button"
               onClick={() => logoutMutation()}
               disabled={isPending}
               className={cn(
-                "w-full p-2 flex items-center justify-start gap-x-3.5 outline-none bg-white/70 dark:bg-neutral-950 border border-neutral-300/60 dark:border-neutral-900 rounded-sm transition-all cursor-pointer hover:bg-neutral-100 hover:border-neutral-300 hover:dark:bg-neutral-950/75 disabled:opacity-60",
+                "w-full cursor-pointer p-2 flex items-center justify-start gap-x-3.5 rounded-md outline-none transition-all duration-200",
+                "bg-neutral-100 hover:bg-neutral-200/75 dark:bg-neutral-900 dark:hover:bg-neutral-800",
+                "border border-neutral-300 dark:border-neutral-800",
+                "disabled:cursor-not-allowed disabled:opacity-60",
                 {
                   "justify-center": collapsed || isPending,
                 }
               )}
             >
               {isPending ? (
-                <Loader2 className="animate-spin" />
+                <Loader2 className="animate-spin text-neutral-600 dark:text-neutral-300" />
               ) : (
                 <Fragment>
                   <LogOut

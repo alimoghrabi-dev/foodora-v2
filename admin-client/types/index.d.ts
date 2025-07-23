@@ -49,6 +49,11 @@ interface IRestaurant {
   website: string;
   logo: string;
   coverImage: string;
+  onSale: boolean;
+  saleType: "fixed" | "percentage";
+  saleAmount?: number;
+  saleStartDate?: Date;
+  saleEndDate?: Date;
   createdAt: string;
   updatedAt: string;
 }
@@ -74,6 +79,11 @@ interface IItem {
   }[];
   rating: number;
   reviewsCount: number;
+  onSale: boolean;
+  saleType: "fixed" | "percentage";
+  saleAmount?: number;
+  saleStartDate?: Date;
+  saleEndDate?: Date;
   isEdited: boolean;
   isAvailable: boolean;
   createdAt: Date;

@@ -18,6 +18,13 @@ interface IRestaurant extends Document {
   password: string;
   isEmailVerified: boolean;
   isPublished: boolean;
+  logo: string;
+  coverImage: string;
+  onSale: boolean;
+  saleType: 'fixed' | 'percentage';
+  saleAmount: number;
+  saleStartDate: Date;
+  saleEndDate: Date;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -2,6 +2,11 @@ import PublishRestaurantForm from "@/components/forms/PublishRestaurantForm";
 import QueryWrapper from "@/components/providers/query-wrapper";
 import { getRestaurantSession } from "@/lib/get-user";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Foodora Admin | Publish Your Restaurant",
+};
 
 export default async function PublishPage() {
   const restaurant = await getRestaurantSession();

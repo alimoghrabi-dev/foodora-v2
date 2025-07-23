@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "react-datepicker/dist/react-datepicker.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -117,6 +118,69 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.react-datepicker {
+  @apply bg-white text-black dark:!bg-neutral-900 dark:!text-white border border-neutral-200 dark:!border-neutral-700;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.react-datepicker__current-month {
+  color: #000 !important;
+}
+
+.dark .react-datepicker__current-month {
+  color: #fff !important;
+}
+
+.react-datepicker-time__header {
+  color: #000 !important;
+}
+
+.dark .react-datepicker-time__header {
+  color: #fff !important;
+}
+
+.react-datepicker__header {
+  @apply bg-white text-black dark:!bg-neutral-950/50 dark:!text-white border-b border-neutral-200 dark:!border-neutral-700;
+}
+
+.react-datepicker__day-name {
+  @apply text-sm text-neutral-800 dark:!text-neutral-200;
+}
+
+.react-datepicker__day {
+  @apply text-sm text-neutral-900 dark:!text-white hover:bg-neutral-100 dark:hover:!bg-neutral-700 rounded-md;
+}
+
+.react-datepicker__day--disabled {
+  @apply opacity-40 cursor-not-allowed pointer-events-none;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  @apply !bg-primary !text-white hover:!bg-primary/90;
+}
+
+.react-datepicker__time-list-item--disabled {
+  @apply text-neutral-400 dark:!text-neutral-600 cursor-not-allowed pointer-events-none;
+}
+
+.react-datepicker__time-container {
+  @apply bg-white dark:!bg-neutral-900 text-black dark:!text-white border-l border-neutral-200 dark:!border-neutral-700;
+}
+
+.react-datepicker__time {
+  @apply p-0;
+}
+
+.react-datepicker__time-list-item {
+  @apply px-3 py-1 bg-white dark:!bg-neutral-900 text-sm hover:bg-neutral-100 dark:hover:!bg-neutral-700 cursor-pointer;
+}
+
+.react-datepicker__time-list-item--selected {
+  @apply !bg-primary dark:!bg-primary !text-white hover:!bg-primary/90 dark:hover:!bg-primary/90;
 }
 
 .grainy {
