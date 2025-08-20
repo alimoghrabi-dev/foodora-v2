@@ -89,6 +89,21 @@ export class Restaurant {
   @Prop()
   coverImage: string;
 
+  @Prop()
+  rating: number;
+
+  @Prop({ default: 0 })
+  reviewCount: number;
+
+  @Prop({ type: String, enum: ['$', '$$', '$$$'] })
+  pricingDescription: string;
+
+  @Prop({
+    type: [Number],
+    validate: [(val: string | any[]) => val.length === 2, 'Must be [min, max]'],
+  })
+  deliveryTimeRange: [number, number];
+
   @Prop({ default: false })
   onSale: boolean;
 
@@ -98,13 +113,16 @@ export class Restaurant {
   @Prop({ default: 0 })
   saleAmount?: number;
 
-  @Prop()
+  @Prop({ type: Date })
   saleStartDate?: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   saleEndDate?: Date;
 
-  @Prop()
+  @Prop({ type: Boolean, default: false })
+  freeDeliveryFirstOrder: boolean;
+
+  @Prop({ type: Boolean })
   isClosed: boolean;
 }
 

@@ -20,7 +20,7 @@ import { S3Service } from 'src/lib/s3.service';
 import { Item, ItemDocument } from 'src/schemas/item.schema';
 import { EmailService } from 'src/lib/email/email.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { emailVerificationTemplate } from 'src/lib/email/templates/email-verification.template';
 import {
   OpeningHoursDto,
@@ -137,8 +137,11 @@ export class AdminRestaurantService {
         password: hashed,
       });
     } catch (error) {
-      console.error(error);
-      throw new InternalServerErrorException('Failed to create restaurant');
+      if (error instanceof ConflictException) {
+        throw new ConflictException(error.message);
+      } else {
+        throw new InternalServerErrorException('Failed to create restaurant');
+      }
     }
   }
 
@@ -271,6 +274,9 @@ export class AdminRestaurantService {
       openingHours,
       phoneNumber,
       website,
+      freeDeliveryFirstOrder,
+      pricingDescription,
+      deliveryTimeRange,
     } = publishRestaurantDto;
 
     const allowedMimeTypes = [
@@ -358,6 +364,9 @@ export class AdminRestaurantService {
             website,
             logo: logoUrl,
             coverImage: coverImageUrl,
+            freeDeliveryFirstOrder: freeDeliveryFirstOrder || false,
+            pricingDescription,
+            deliveryTimeRange,
             isPublished: true,
           },
         },
@@ -382,8 +391,17 @@ export class AdminRestaurantService {
     coverImage: Express.Multer.File | undefined,
     restaurant: IRestaurant,
   ) {
-    const { name, description, cuisine, address, phoneNumber, website } =
-      publishRestaurantDto;
+    const {
+      name,
+      description,
+      cuisine,
+      address,
+      phoneNumber,
+      website,
+      pricingDescription,
+      freeDeliveryFirstOrder,
+      deliveryTimeRange,
+    } = publishRestaurantDto;
 
     const allowedMimeTypes = [
       'image/jpeg',
@@ -396,9 +414,13 @@ export class AdminRestaurantService {
 
       if (!dbRestaurant) throw new NotFoundException('Restaurant not found');
 
-      if (typeof logo !== 'string' && !logo)
+      if (typeof logo !== 'string' && !logo && !dbRestaurant.logo)
         throw new NotFoundException('Logo is required');
-      if (typeof coverImage !== 'string' && !coverImage)
+      if (
+        typeof coverImage !== 'string' &&
+        !coverImage &&
+        !dbRestaurant.coverImage
+      )
         throw new NotFoundException('Cover image is required');
 
       const validateFile = async (
@@ -425,13 +447,13 @@ export class AdminRestaurantService {
       let compressedLogo: Buffer | undefined;
       let compressedCoverImage: Buffer | undefined;
 
-      if (typeof logo !== 'string') {
+      if (logo && typeof logo !== 'string') {
         await validateFile(logo, 'Logo');
 
         const oldKey = new URL(dbRestaurant.logo).pathname.slice(1);
         await this.s3Service.deleteFile(oldKey);
 
-        compressedLogo = await sharp(logo.buffer)
+        compressedLogo = await sharp(logo?.buffer)
           .resize({
             width: 150,
             height: 150,
@@ -443,13 +465,13 @@ export class AdminRestaurantService {
           .toBuffer();
       }
 
-      if (typeof coverImage !== 'string') {
+      if (coverImage && typeof coverImage !== 'string') {
         await validateFile(coverImage, 'Cover Image');
 
         const oldKey = new URL(dbRestaurant.coverImage).pathname.slice(1);
         await this.s3Service.deleteFile(oldKey);
 
-        compressedCoverImage = await sharp(coverImage.buffer)
+        compressedCoverImage = await sharp(coverImage?.buffer)
           .resize({
             width: 1200,
             height: 600,
@@ -507,6 +529,20 @@ export class AdminRestaurantService {
         dbRestaurant.website = website;
       }
 
+      if (
+        pricingDescription &&
+        dbRestaurant.pricingDescription !== pricingDescription
+      ) {
+        dbRestaurant.pricingDescription = pricingDescription;
+      }
+
+      if (
+        deliveryTimeRange &&
+        dbRestaurant.deliveryTimeRange !== deliveryTimeRange
+      ) {
+        dbRestaurant.deliveryTimeRange = deliveryTimeRange;
+      }
+
       dbRestaurant.address = {
         street: address.street,
         city: address.city,
@@ -516,6 +552,8 @@ export class AdminRestaurantService {
         latitude: address.latitude ?? undefined,
         longitude: address.longitude ?? undefined,
       };
+
+      dbRestaurant.freeDeliveryFirstOrder = freeDeliveryFirstOrder || false;
 
       await dbRestaurant.save();
 
@@ -668,6 +706,17 @@ export class AdminRestaurantService {
         throw new NotFoundException('Restaurant not found');
       }
 
+      const exists = await this.itemModel.exists({
+        restaurantId: restaurant._id,
+        category: new Types.ObjectId(categoryId),
+      });
+
+      if (exists) {
+        throw new ConflictException(
+          'Category is associated with menu items, edit items first',
+        );
+      }
+
       await this.categoryModel.deleteOne({
         _id: categoryId,
       });
@@ -678,6 +727,8 @@ export class AdminRestaurantService {
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);
+      } else if (error instanceof ConflictException) {
+        throw new ConflictException(error.message);
       } else {
         throw new InternalServerErrorException('Failed to delete category');
       }
@@ -698,18 +749,9 @@ export class AdminRestaurantService {
         ingredients,
         tags,
         variants,
+        addons,
         isAvailable,
       } = createMenuItemDto;
-
-      let parsedVariants: VariantDto[] = [];
-
-      if (Array.isArray(variants)) {
-        parsedVariants = variants.map((variant) =>
-          typeof variant === 'string'
-            ? (JSON.parse(variant) as VariantDto)
-            : variant,
-        );
-      }
 
       let imageUrl: string | undefined;
 
@@ -751,7 +793,8 @@ export class AdminRestaurantService {
         category,
         ingredients,
         tags,
-        variants: parsedVariants,
+        variants,
+        addons,
         isAvailable,
       });
     } catch (error) {
@@ -773,6 +816,21 @@ export class AdminRestaurantService {
     restaurant: IRestaurant,
   ) {
     try {
+      if (file) {
+        const allowedTypes = [
+          'image/png',
+          'image/jpg',
+          'image/jpeg',
+          'image/webp',
+        ];
+        if (!allowedTypes.includes(file.mimetype)) {
+          throw new ConflictException('Invalid file type');
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          throw new ConflictException('File too large (max 10MB)');
+        }
+      }
+
       const {
         title,
         description,
@@ -781,18 +839,9 @@ export class AdminRestaurantService {
         ingredients,
         tags,
         variants,
+        addons,
         isAvailable,
       } = editMenuItemDto;
-
-      let parsedVariants: VariantDto[] = [];
-
-      if (Array.isArray(variants)) {
-        parsedVariants = variants.map((variant) =>
-          typeof variant === 'string'
-            ? (JSON.parse(variant) as VariantDto)
-            : variant,
-        );
-      }
 
       let imageUrl: string | undefined;
 
@@ -835,10 +884,11 @@ export class AdminRestaurantService {
             description,
             price,
             imageUrl,
-            category,
+            category: new Types.ObjectId(category),
             ingredients,
             tags,
-            variants: parsedVariants,
+            variants,
+            addons,
             isAvailable,
           },
         },
@@ -921,7 +971,8 @@ export class AdminRestaurantService {
         {
           $set: {
             'variants.$.name': variantDto.name,
-            'variants.$.price': variantDto.price ?? 0,
+            'variants.$.options': variantDto.options,
+            'variants.$.isRequired': variantDto.isRequired ?? true,
             'variants.$.isAvailable': variantDto.isAvailable ?? true,
           },
         },

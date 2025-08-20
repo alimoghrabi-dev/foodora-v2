@@ -21,6 +21,7 @@ const MainNavbar: React.FC = () => {
         <div className="flex items-center gap-2">routes</div>
         <Link
           href="/market"
+          target="_blank"
           className="bg-white rounded-full px-4 py-2 text-base font-medium text-primary hover:opacity-85 transition-opacity"
         >
           Market

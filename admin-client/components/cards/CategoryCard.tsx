@@ -14,7 +14,8 @@ const CategoryCard: React.FC<{
     name: string;
     createdAt: Date;
   };
-}> = ({ cat }) => {
+  setErrorMessage: React.Dispatch<React.SetStateAction<string | null>>;
+}> = ({ cat, setErrorMessage }) => {
   const queryClient = useQueryClient();
 
   const [feature, setFeature] = useState<{
@@ -33,7 +34,14 @@ const CategoryCard: React.FC<{
       queryClient.invalidateQueries({
         queryKey: ["CATEGORIES"],
       });
+
       setFeature({ isEditing: false, isDeleting: false });
+    },
+    onError: (error) => {
+      setFeature({ isEditing: false, isDeleting: false });
+      setErrorMessage(
+        error.message || "Something went wrong, please try again."
+      );
     },
   });
 

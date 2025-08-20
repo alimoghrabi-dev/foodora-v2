@@ -33,7 +33,15 @@ export class Item {
     type: [
       {
         name: { type: String, required: true },
-        price: { type: Number, default: 0 },
+        options: {
+          type: [
+            {
+              name: { type: String, required: true },
+              price: { type: Number },
+            },
+          ],
+        },
+        isRequired: { type: Boolean, default: false },
         isAvailable: { type: Boolean, default: true },
       },
     ],
@@ -42,14 +50,26 @@ export class Item {
   variants: {
     name: string;
     price?: number;
+    options?: { name: string; price: number }[];
+    isRequired?: boolean;
     isAvailable?: boolean;
   }[];
 
-  @Prop({ default: 0 })
-  rating: number;
+  @Prop({
+    type: [
+      {
+        name: { type: String, required: true },
+        price: { type: Number },
+      },
+    ],
+  })
+  addons: {
+    name: string;
+    price: number;
+  };
 
   @Prop({ default: 0 })
-  reviewsCount: number;
+  rating: number;
 
   @Prop({ default: false })
   onSale: boolean;
@@ -78,5 +98,6 @@ export const ItemSchema = SchemaFactory.createForClass(Item);
 ItemSchema.index({ restaurantId: 1 });
 ItemSchema.index({ title: 1, restaurantId: 1 });
 ItemSchema.index({ restaurantId: 1, 'variants._id': 1 });
+ItemSchema.index({ restaurantId: 1, category: 1 });
 ItemSchema.index({ onSale: 1, saleEndDate: 1 });
 ItemSchema.index({ onSale: 1, restaurantId: 1 });

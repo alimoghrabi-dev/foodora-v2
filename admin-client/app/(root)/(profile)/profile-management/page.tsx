@@ -19,6 +19,9 @@ export default async function ProfileManagementPage() {
     website: restaurant?.website,
     logo: restaurant?.logo,
     coverImage: restaurant?.coverImage,
+    freeDeliveryFirstOrder: restaurant?.freeDeliveryFirstOrder,
+    pricingDescription: restaurant?.pricingDescription,
+    deliveryTimeRange: restaurant?.deliveryTimeRange,
   };
 
   return (

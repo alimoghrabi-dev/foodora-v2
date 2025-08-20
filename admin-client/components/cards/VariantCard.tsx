@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Fragment, useState } from "react";
-import { formatPriceWithAbbreviation } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -17,12 +17,18 @@ import {
   deleteVariant,
   getClientMenuItems,
 } from "@/lib/actions/client.actions";
+import { ScrollArea } from "../ui/scroll-area";
 
 const VariantCard: React.FC<{
   variant: {
     _id: string;
     name: string;
-    price: number;
+    options: {
+      _id: string;
+      name: string;
+      price: number;
+    }[];
+    isRequired: boolean;
     isAvailable: boolean;
   };
   setToast: React.Dispatch<
@@ -31,7 +37,9 @@ const VariantCard: React.FC<{
       message: string;
     }>
   >;
-}> = ({ variant, setToast }) => {
+  itemId: string;
+  itemTitle: string;
+}> = ({ variant, setToast, itemId, itemTitle }) => {
   const queryClient = useQueryClient();
 
   const [editOpen, setEditOpen] = useState<boolean>(false);
@@ -79,7 +87,7 @@ const VariantCard: React.FC<{
           <button
             type="button"
             onClick={() => setIsDeleting(false)}
-            className="cursor-pointer w-full px-8 py-[13px] text-sm font-medium rounded-sm border border-input bg-transparent text-foreground hover:bg-muted transition-colors"
+            className="cursor-pointer w-full px-8 py-[15px] text-sm font-medium rounded-sm border border-input bg-transparent text-foreground hover:bg-muted transition-colors"
           >
             Cancel
           </button>
@@ -87,7 +95,7 @@ const VariantCard: React.FC<{
             type="button"
             disabled={isPending}
             onClick={() => deleteMutation()}
-            className="cursor-pointer w-full px-8 py-[13px] text-sm font-medium rounded-sm bg-red-500 dark:bg-red-600 text-white hover:bg-red-600 hover:dark:bg-red-700 transition-colors"
+            className="cursor-pointer w-full px-8 py-[15px] text-sm font-medium rounded-sm bg-red-500 dark:bg-red-600 text-white hover:bg-red-600 hover:dark:bg-red-700 transition-colors"
           >
             Confirm
           </button>
@@ -95,21 +103,38 @@ const VariantCard: React.FC<{
       ) : (
         <Fragment>
           <div className="flex flex-col gap-1">
-            <span className="text-base font-semibold text-foreground capitalize">
-              {variant.name}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {formatPriceWithAbbreviation(variant.price)} •{" "}
+            <div className="flex items-center gap-x-1">
+              <span className="text-base font-semibold text-foreground capitalize">
+                {variant.name}
+              </span>
+              -
+              <span className="text-base font-medium text-foreground">
+                {variant.options.length === 1
+                  ? "1 option"
+                  : `${formatNumber(variant.options.length)} options`}
+              </span>
+            </div>
+            <div className="flex items-center gap-x-1">
               <span
                 className={`${
                   variant.isAvailable
                     ? "text-green-500"
                     : "text-destructive dark:text-red-400"
-                } font-medium`}
+                } font-medium text-sm`}
               >
                 {variant.isAvailable ? "Available" : "Unavailable"}
               </span>
-            </span>
+              .
+              <span
+                className={`${
+                  variant.isRequired
+                    ? "text-red-500"
+                    : "text-neutral-500 dark:text-neutral-400"
+                } font-medium text-sm`}
+              >
+                {variant.isRequired ? "Required" : "Optional"}
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -124,18 +149,22 @@ const VariantCard: React.FC<{
                   <Pencil className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </Button>
               </DialogTrigger>
-              <DialogContent aria-describedby={undefined}>
-                <DialogHeader>
+              <DialogContent aria-describedby={undefined} className="px-0">
+                <DialogHeader className="px-4">
                   <DialogTitle className="capitalize">
                     Edit Variant - {variant.name}
                   </DialogTitle>
                   <div className="w-20 h-px bg-neutral-300 dark:bg-neutral-900" />
                 </DialogHeader>
-                <EditVariantForm
-                  variant={variant}
-                  setEditOpen={setEditOpen}
-                  setToast={setToast}
-                />
+                <ScrollArea className="w-full max-h-[65vh]">
+                  <EditVariantForm
+                    variant={variant}
+                    setEditOpen={setEditOpen}
+                    setToast={setToast}
+                    itemId={itemId}
+                    itemTitle={itemTitle}
+                  />
+                </ScrollArea>
               </DialogContent>
             </Dialog>
 

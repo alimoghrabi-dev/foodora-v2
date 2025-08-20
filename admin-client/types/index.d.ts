@@ -54,6 +54,9 @@ interface IRestaurant {
   saleAmount?: number;
   saleStartDate?: Date;
   saleEndDate?: Date;
+  freeDeliveryFirstOrder: boolean;
+  pricingDescription: "$" | "$$" | "$$$";
+  deliveryTimeRange: [number, number];
   createdAt: string;
   updatedAt: string;
 }
@@ -74,8 +77,18 @@ interface IItem {
   variants: {
     _id: string;
     name: string;
-    price: number;
+    options: {
+      _id: string;
+      name: string;
+      price: number;
+    }[];
+    isRequired: boolean;
     isAvailable: boolean;
+  }[];
+  addons: {
+    _id: string;
+    name: string;
+    price: number;
   }[];
   rating: number;
   reviewsCount: number;

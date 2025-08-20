@@ -7,10 +7,17 @@ const VariantDialogManagement: React.FC<{
   variants: {
     _id: string;
     name: string;
-    price: number;
+    options: {
+      _id: string;
+      name: string;
+      price: number;
+    }[];
+    isRequired: boolean;
     isAvailable: boolean;
   }[];
-}> = ({ variants }) => {
+  itemId: string;
+  itemTitle: string;
+}> = ({ variants, itemId, itemTitle }) => {
   const [toast, setToast] = useState<{
     type: "success" | "error";
     message: string;
@@ -56,6 +63,8 @@ const VariantDialogManagement: React.FC<{
             key={variant._id}
             variant={variant}
             setToast={setToast}
+            itemId={itemId}
+            itemTitle={itemTitle}
           />
         ))}
       </div>

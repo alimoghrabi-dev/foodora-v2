@@ -6,7 +6,22 @@ const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
 
 const lebanesePhoneRegex = /^(01|03|70|71|76|78|79|81|82)\d{6}$/;
 
-const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+const timeRegex = /^([0-1]?[0-9]|2[0-3]):([0-5][0-9])\s?(AM|PM)?$/i;
+
+function convertTo24HourMinutes(time: string) {
+  const [timePart, meridian] = time.toUpperCase().split(" ");
+  // eslint-disable-next-line prefer-const
+  let [hours, minutes] = timePart.split(":").map(Number);
+
+  if (meridian === "PM" && hours !== 12) {
+    hours += 12;
+  }
+  if (meridian === "AM" && hours === 12) {
+    hours = 0;
+  }
+
+  return hours * 60 + minutes;
+}
 
 const dailyHoursSchema = z
   .object({
@@ -16,17 +31,19 @@ const dailyHoursSchema = z
   .refine(
     ({ open, close }) => {
       if (!open && !close) return true;
-
       if (!open || !close) return false;
 
-      const isOpenValid = timeRegex.test(open);
-      const isCloseValid = timeRegex.test(close);
-      if (!isOpenValid || !isCloseValid) return false;
+      if (!timeRegex.test(open) || !timeRegex.test(close)) return false;
 
-      return open <= close;
+      const openMinutes = convertTo24HourMinutes(open);
+      const closeMinutes = convertTo24HourMinutes(close);
+
+      if (openMinutes === closeMinutes) return false;
+
+      return true;
     },
     {
-      message: "Open and close times are required. Close must be after open.",
+      message: "Close time must be after open time or past midnight",
       path: ["close"],
     }
   );
@@ -77,8 +94,24 @@ export const AddMenuItemValidationSchema = z.object({
     .array(
       z.object({
         name: z.string().trim().min(1, "Variant name is required"),
-        price: z.number().min(0).optional(),
+        options: z
+          .array(
+            z.object({
+              name: z.string().trim().min(1, "Option name is required"),
+              price: z.number().min(0).optional(),
+            })
+          )
+          .min(1, "At least one option is required"),
+        isRequired: z.boolean().default(true).optional(),
         isAvailable: z.boolean().default(true).optional(),
+      })
+    )
+    .optional(),
+  addons: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1, "Addon name is required"),
+        price: z.number().min(0).optional(),
       })
     )
     .optional(),
@@ -156,6 +189,14 @@ export const PublishRestaurantValidationSchema = z.object({
     .optional(),
   logo: imageSchema,
   coverImage: imageSchema,
+  freeDeliveryFirstOrder: z.boolean().default(false).optional(),
+  pricingDescription: z.enum(["$", "$$", "$$$"]),
+  deliveryTimeRange: z
+    .array(z.number().max(120))
+    .length(2, "Delivery time must include exactly [min, max]")
+    .refine(([min, max]) => min < max, {
+      message: "Minimum time must be less than maximum time",
+    }),
 });
 
 export const OpeningHoursChangerValidationSchema = z.object({
@@ -172,7 +213,15 @@ export const OpeningHoursChangerValidationSchema = z.object({
 
 export const EditItemVariantValidationSchema = z.object({
   name: z.string().trim().min(1, "Variant name is required"),
-  price: z.number().min(0).optional(),
+  options: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1, "Option name is required"),
+        price: z.number().min(0).optional(),
+      })
+    )
+    .min(1, "At least one option is required"),
+  isRequired: z.boolean().default(true).optional(),
   isAvailable: z.boolean().default(true).optional(),
 });
 
@@ -238,6 +287,14 @@ export const RestaurantManagementValidationSchema = z.object({
     .optional(),
   logo: imageSchema,
   coverImage: imageSchema,
+  freeDeliveryFirstOrder: z.boolean().default(false).optional(),
+  pricingDescription: z.enum(["$", "$$", "$$$"]),
+  deliveryTimeRange: z
+    .array(z.number().max(120))
+    .length(2, "Delivery time must include exactly [min, max]")
+    .refine(([min, max]) => min < max, {
+      message: "Minimum time must be less than maximum time",
+    }),
 });
 
 export const ItemSaleValidationSchema = z

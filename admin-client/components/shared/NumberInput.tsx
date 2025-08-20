@@ -32,7 +32,7 @@ const NumberInput: React.FC<{
 
   return (
     <div className="relative flex items-center">
-      <div className="h-[30px] absolute right-2.5 flex flex-col">
+      <div className="absolute right-2.5 top-1/2 translate-y-[-47.5%] flex flex-col">
         <button
           type="button"
           onClick={increment}

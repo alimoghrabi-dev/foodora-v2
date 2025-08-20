@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function PublishPage() {
   const restaurant = await getRestaurantSession();
 
-  if (!restaurant) {
+  if (!restaurant || restaurant.isPublished) {
     redirect("/login");
   }
 

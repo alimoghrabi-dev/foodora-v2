@@ -36,6 +36,8 @@ import ImageFileInput from "../shared/ImageFileInput";
 import { Button } from "../ui/button";
 import { Loader2, Plus } from "lucide-react";
 import { z } from "zod";
+import AddItemVariantCard from "./AddItemVariantCard";
+import AddItemAddonCard from "./AddItemAddonCard";
 
 const MenuItemEditorForm: React.FC<{
   item: IItem;
@@ -60,6 +62,7 @@ const MenuItemEditorForm: React.FC<{
       tags: [],
       ingredients: [],
       variants: [],
+      addons: [],
       isAvailable: false,
     },
   });
@@ -67,6 +70,15 @@ const MenuItemEditorForm: React.FC<{
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "variants",
+  });
+
+  const {
+    fields: addonsFields,
+    append: appendAddon,
+    remove: removeAddon,
+  } = useFieldArray({
+    control: form.control,
+    name: "addons",
   });
 
   const { mutate: editItemMutation, isPending } = useMutation({
@@ -93,7 +105,7 @@ const MenuItemEditorForm: React.FC<{
     if (!isGettingCategories && categories?.length > 0) {
       const matchedCategory = categories.find(
         (cat: { _id: { toString: () => string } }) =>
-          cat._id.toString() === item.category._id?.toString()
+          cat._id.toString() === item.category?._id?.toString()
       );
 
       if (!matchedCategory) {
@@ -109,7 +121,8 @@ const MenuItemEditorForm: React.FC<{
         image: item.imageUrl,
         tags: item.tags,
         ingredients: item.ingredients,
-        variants: item.variants,
+        variants: item.variants || [],
+        addons: item.addons || [],
         isAvailable: item.isAvailable,
         category: matchedCategory ? matchedCategory._id.toString() : "",
       });
@@ -208,7 +221,7 @@ const MenuItemEditorForm: React.FC<{
                     value={field.value}
                     onValueChange={field.onChange}
                   >
-                    <SelectTrigger className="w-full border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all cursor-pointer">
+                    <SelectTrigger className="w-full capitalize border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all cursor-pointer">
                       <SelectValue
                         placeholder={
                           isGettingCategories
@@ -228,6 +241,7 @@ const MenuItemEditorForm: React.FC<{
                             <SelectItem
                               key={cat._id}
                               value={cat._id.toString()}
+                              className="capitalize"
                             >
                               {cat.name}
                             </SelectItem>
@@ -307,105 +321,76 @@ const MenuItemEditorForm: React.FC<{
               )}
             />
           </div>
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="rounded-sm w-full cursor-pointer hover:opacity-85 active:bg-primary active:scale-[1.025] text-base font-medium py-5"
-          >
-            {isPending ? <Loader2 className="animate-spin" /> : "Edit Item"}
-          </Button>
         </div>
 
         <div className="w-full h-full border-t lg:border-t-0 lg:border-l border-neutral-300 dark:border-neutral-800 pt-4 lg:pt-0 lg:pl-4 space-y-6">
-          <p className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
-            Item Variants
-          </p>
+          <div className="w-full space-y-4">
+            <p className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+              Item Variants
+            </p>
 
-          {fields.map((field, index) => (
-            <div
-              key={field.id}
-              className="space-y-2 p-3 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-sm"
+            {fields.map((field, index) => (
+              <AddItemVariantCard
+                key={field.id}
+                form={form}
+                index={index}
+                remove={remove}
+              />
+            ))}
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                append({
+                  name: "",
+                  options: [],
+                  isRequired: true,
+                  isAvailable: true,
+                })
+              }
+              className="w-44 flex items-center gap-x-1 text-base py-5 rounded-sm border-dashed border border-neutral-400 dark:border-neutral-700 cursor-pointer"
             >
-              <FormField
-                name={`variants.${index}.name`}
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-x-0.5 font-medium">
-                      Name <p className="text-blue-500">*</p>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        value={field.value}
-                        onChange={(e) =>
-                          field.onChange(sanitizeInput(e.target.value))
-                        }
-                        placeholder="e.g., Extra Cheese, Additional Sauce, etc."
-                        className="w-full border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <Plus size={24} /> Add Variant
+            </Button>
+          </div>
+          <div className="w-full border border-dashed border-neutral-300 dark:border-neutral-700" />
+          <div className="w-full space-y-4">
+            <p className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+              Item Addons
+            </p>
 
-              <FormField
-                name={`variants.${index}.price`}
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-medium">Price</FormLabel>
-                    <FormControl>
-                      <NumberInput
-                        value={field.value ?? 0}
-                        onChange={field.onChange}
-                        className="w-full border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            {addonsFields.map((field, index) => (
+              <AddItemAddonCard
+                key={field.id}
+                form={form}
+                index={index}
+                remove={removeAddon}
               />
+            ))}
 
-              <FormField
-                name={`variants.${index}.isAvailable`}
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={field.value ?? true}
-                        onChange={field.onChange}
-                        className="form-checkbox h-4 w-4 text-primary"
-                      />
-                      <FormLabel className="text-sm font-medium">
-                        Available
-                      </FormLabel>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className="text-red-600 text-sm hover:underline cursor-pointer transition hover:opacity-85"
-                    >
-                      Remove
-                    </button>
-                  </FormItem>
-                )}
-              />
-            </div>
-          ))}
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => append({ name: "", price: 0, isAvailable: true })}
-            className="w-44 flex items-center gap-x-1 text-base py-5 rounded-sm border-dashed border border-neutral-400 dark:border-neutral-700 cursor-pointer"
-          >
-            <Plus size={24} /> Add Variant
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                appendAddon({
+                  name: "",
+                  price: 0,
+                })
+              }
+              className="w-44 flex items-center gap-x-1 text-base py-5 rounded-sm border-dashed border border-neutral-400 dark:border-neutral-700 cursor-pointer"
+            >
+              <Plus size={24} /> Add Addon
+            </Button>
+          </div>
         </div>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="rounded-sm w-full cursor-pointer hover:opacity-85 active:bg-primary active:scale-[1.025] text-base font-medium py-5"
+        >
+          {isPending ? <Loader2 className="animate-spin" /> : "Edit Item"}
+        </Button>
       </form>
     </Form>
   );

@@ -7,6 +7,7 @@ interface IUser extends Document {
   password: string;
   role: string;
   isEmailVerified: boolean;
+  favorites: string[];
   createdAt: Date;
   updatedAt: Date;
 }

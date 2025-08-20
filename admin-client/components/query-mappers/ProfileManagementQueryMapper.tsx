@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { RestaurantManagementValidationSchema } from "@/lib/validators";
 import TextInputsManageBox from "../shared/TextInputsManageBox";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil, X } from "lucide-react";
 import ImageFileInput from "../shared/ImageFileInput";
 import CoverImageFileInput from "../shared/CoverImageFileInput";
 import { useMutation } from "@tanstack/react-query";
@@ -23,6 +23,16 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { z } from "zod";
 import { manageRestaurantAction } from "@/lib/actions/client.actions";
+import { Checkbox } from "../ui/checkbox";
+import { cn } from "@/lib/utils";
+import NumberInput from "../shared/NumberInput";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 const ProfileManagementQueryMapper: React.FC<{
   data: {
@@ -44,9 +54,15 @@ const ProfileManagementQueryMapper: React.FC<{
     website: string | undefined;
     logo: string | undefined;
     coverImage: string | undefined;
+    freeDeliveryFirstOrder: boolean | undefined;
+    pricingDescription: "$" | "$$" | "$$$" | undefined;
+    deliveryTimeRange: [number, number] | undefined;
   };
 }> = ({ data }) => {
   const router = useRouter();
+
+  const [pricingDescOpen, setPricingDescOpen] = useState<boolean>(false);
+  const [deliveryRangeOpen, setDeliveryRangeOpen] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof RestaurantManagementValidationSchema>>({
     resolver: zodResolver(RestaurantManagementValidationSchema),
@@ -67,6 +83,9 @@ const ProfileManagementQueryMapper: React.FC<{
       website: "",
       logo: undefined,
       coverImage: undefined,
+      freeDeliveryFirstOrder: false,
+      pricingDescription: undefined,
+      deliveryTimeRange: [],
     },
   });
 
@@ -106,6 +125,9 @@ const ProfileManagementQueryMapper: React.FC<{
         website: data.website ?? "",
         logo: data.logo ?? undefined,
         coverImage: data.coverImage ?? undefined,
+        freeDeliveryFirstOrder: data.freeDeliveryFirstOrder ?? false,
+        pricingDescription: data.pricingDescription ?? undefined,
+        deliveryTimeRange: data.deliveryTimeRange ?? [],
       });
     }
   }, [data, form]);
@@ -127,6 +149,31 @@ const ProfileManagementQueryMapper: React.FC<{
             {isPending ? <Loader2 className="animate-spin" /> : "Save Changes"}
           </Button>
         </div>
+        <FormField
+          name="freeDeliveryFirstOrder"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem className="my-1 pl-1">
+              <FormControl>
+                <div className="flex items-center gap-x-2">
+                  <Checkbox
+                    id="freeDeliveryOnFirstOrder"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="cursor-pointer transition-all"
+                  />
+                  <FormLabel
+                    htmlFor="freeDeliveryOnFirstOrder"
+                    className="cursor-pointer hover:opacity-85 transition"
+                  >
+                    {`Do you want to offer free delivery for customers on their first order ?`}
+                  </FormLabel>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
           <FormField
             name="name"
@@ -268,6 +315,146 @@ const ProfileManagementQueryMapper: React.FC<{
                 field={field}
                 placeHolder="Enter your website url"
               />
+            )}
+          />
+        </div>
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+          <FormField
+            name="pricingDescription"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem className="w-full p-4 rounded-md border flex flex-col bg-white dark:bg-neutral-950">
+                <div className="w-full flex items-center justify-between">
+                  <FormLabel className="font-medium text-base flex items-center gap-x-1">
+                    Describe your pricing
+                    <span className="text-blue-500 text-[15px]">*</span>
+                  </FormLabel>
+                  <button
+                    type="button"
+                    onClick={() => setPricingDescOpen(!pricingDescOpen)}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-sm transition-all cursor-pointer",
+                      pricingDescOpen
+                        ? "bg-red-500 text-white hover:bg-red-600"
+                        : "bg-primary text-white hover:bg-primary/85"
+                    )}
+                  >
+                    {pricingDescOpen ? (
+                      <Fragment>
+                        <X size={16} />
+                        Close
+                      </Fragment>
+                    ) : (
+                      <Fragment>
+                        <Pencil size={16} />
+                        Edit
+                      </Fragment>
+                    )}
+                  </button>
+                </div>
+                <FormControl>
+                  {pricingDescOpen ? (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full mt-6 resize-none border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all">
+                        <SelectValue placeholder="Pricing description" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-neutral-900">
+                        <SelectItem value="$" className="cursor-pointer">
+                          $ (cheap)
+                        </SelectItem>
+                        <SelectItem value="$$" className="cursor-pointer">
+                          $$ (medium)
+                        </SelectItem>
+                        <SelectItem value="$$$" className="cursor-pointer">
+                          $$$ (expensive)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="select-none inline-block capitalize px-4 py-2 mt-1 rounded-xl italic bg-blue-100 line-clamp-1 truncate dark:bg-blue-800/25 text-blue-800 dark:text-blue-200 text-sm font-medium shadow-sm">
+                      {field.value
+                        ? field.value
+                        : `Pricing description not set yet.`}
+                    </div>
+                  )}
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="deliveryTimeRange"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem className="w-full p-4 rounded-md border flex flex-col bg-white dark:bg-neutral-950">
+                <div className="w-full flex items-center justify-between">
+                  <FormLabel className="font-medium text-base flex items-center gap-x-1">
+                    Delivery Range
+                    <span className="text-blue-500 text-[15px]">*</span>
+                  </FormLabel>
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryRangeOpen(!deliveryRangeOpen)}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-sm transition-all cursor-pointer",
+                      deliveryRangeOpen
+                        ? "bg-red-500 text-white hover:bg-red-600"
+                        : "bg-primary text-white hover:bg-primary/85"
+                    )}
+                  >
+                    {deliveryRangeOpen ? (
+                      <Fragment>
+                        <X size={16} />
+                        Close
+                      </Fragment>
+                    ) : (
+                      <Fragment>
+                        <Pencil size={16} />
+                        Edit
+                      </Fragment>
+                    )}
+                  </button>
+                </div>
+                <FormControl>
+                  {deliveryRangeOpen ? (
+                    <div className="w-full grid grid-cols-2 gap-1.5">
+                      <div className="flex flex-col gap-y-0.5">
+                        <label className="font-normal text-neutral-700 dark:text-neutral-300 text-sm">
+                          Minimum
+                        </label>
+                        <NumberInput
+                          value={field.value?.[0] ?? 0}
+                          onChange={(value) => {
+                            const max = field.value?.[1] ?? 0;
+                            field.onChange([value, max]);
+                          }}
+                          className="w-full mt-0.5 resize-none border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-y-0.5">
+                        <label className="font-normal text-neutral-700 dark:text-neutral-300 text-sm">
+                          Maximum
+                        </label>
+                        <NumberInput
+                          value={field.value?.[1] ?? 0}
+                          onChange={(value) => {
+                            const min = field.value?.[0] ?? 0;
+                            field.onChange([min, value]);
+                          }}
+                          className="w-full mt-0.5 resize-none border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="select-none inline-block px-4 py-2 mt-1 rounded-xl italic bg-blue-100 line-clamp-1 truncate dark:bg-blue-800/25 text-blue-800 dark:text-blue-200 text-sm font-medium shadow-sm">
+                      {field.value.length === 0
+                        ? `Pricing description not set yet.`
+                        : `${field.value[0]} - ${field.value[1]} min`}
+                    </div>
+                  )}
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
         </div>

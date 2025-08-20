@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { getCategories } from "@/lib/actions/client.actions";
 import { useQuery } from "@tanstack/react-query";
-import { Ghost, RefreshCw, Plus, ArrowBigLeft } from "lucide-react";
+import {
+  Ghost,
+  RefreshCw,
+  Plus,
+  ArrowBigLeft,
+  AlertCircle,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import CreateCategoryForm from "../forms/CreateCategoryForm";
 import CategoryCard from "../cards/CategoryCard";
@@ -11,6 +17,7 @@ import { ScrollArea } from "../ui/scroll-area";
 
 const ManageCategoriesDialog: React.FC = () => {
   const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
     data: categories,
@@ -22,6 +29,14 @@ const ManageCategoriesDialog: React.FC = () => {
     queryFn: getCategories,
     refetchOnWindowFocus: false,
   });
+
+  useEffect(() => {
+    if (errorMessage) {
+      setTimeout(() => {
+        setErrorMessage(null);
+      }, 6500);
+    }
+  }, [errorMessage]);
 
   if (isCreating) {
     return (
@@ -90,15 +105,27 @@ const ManageCategoriesDialog: React.FC = () => {
           </p>
         </div>
       ) : (
-        <ScrollArea className="w-full max-h-[32vh] pr-3">
-          <div className="w-full grid gap-3 mt-4">
-            {categories.map(
-              (cat: { _id: string; name: string; createdAt: Date }) => (
-                <CategoryCard key={cat._id} cat={cat} />
-              )
-            )}
-          </div>
-        </ScrollArea>
+        <Fragment>
+          {errorMessage && (
+            <span className="w-full max-w-full break-words flex items-center gap-x-1 text-[13px] font-medium text-red-500 mt-2.5">
+              <AlertCircle size={17} />
+              {errorMessage}
+            </span>
+          )}
+          <ScrollArea className="w-full max-h-[32vh] pr-3">
+            <div className="w-full grid gap-3 mt-4">
+              {categories.map(
+                (cat: { _id: string; name: string; createdAt: Date }) => (
+                  <CategoryCard
+                    key={cat._id}
+                    cat={cat}
+                    setErrorMessage={setErrorMessage}
+                  />
+                )
+              )}
+            </div>
+          </ScrollArea>
+        </Fragment>
       )}
     </div>
   );

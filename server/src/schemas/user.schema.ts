@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
@@ -22,6 +22,12 @@ export class User {
 
   @Prop({ type: String, default: 'customer', enum: ['customer', 'admin'] })
   role: string;
+
+  @Prop({ type: [Types.ObjectId], ref: 'Restaurant', default: [] })
+  favorites: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: 'Cart', default: [] })
+  carts: Types.ObjectId[];
 
   @Prop({ default: false })
   isEmailVerified: boolean;

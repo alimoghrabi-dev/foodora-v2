@@ -27,6 +27,13 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { publishRestaurantAction } from "@/lib/actions/client.actions";
 import { refetchSessionCookie } from "@/lib/session-updates";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 const days = [
   "monday",
@@ -76,6 +83,9 @@ const PublishRestaurantForm: React.FC<{
       website: "",
       logo: undefined,
       coverImage: undefined,
+      freeDeliveryFirstOrder: false,
+      pricingDescription: undefined,
+      deliveryTimeRange: [],
     },
   });
 
@@ -380,7 +390,81 @@ const PublishRestaurantForm: React.FC<{
               )}
             />
           </div>
-          <div className="w-full flex items-center justify-center">
+
+          <FormField
+            name="deliveryTimeRange"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-x-0.5 font-medium">
+                  Delivery Range <p className="text-blue-500">*</p>
+                </FormLabel>
+                <FormControl>
+                  <div className="w-full grid grid-cols-2 gap-1.5">
+                    <div className="flex flex-col gap-y-0.5">
+                      <label className="font-normal text-neutral-700 dark:text-neutral-300 text-sm">
+                        Minimum
+                      </label>
+                      <NumberInput
+                        value={field.value?.[0] ?? 0}
+                        onChange={(value) => {
+                          const max = field.value?.[1] ?? 0;
+                          field.onChange([value, max]);
+                        }}
+                        className="w-full border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-y-0.5">
+                      <label className="font-normal text-neutral-700 dark:text-neutral-300 text-sm">
+                        Maximum
+                      </label>
+                      <NumberInput
+                        value={field.value?.[1] ?? 0}
+                        onChange={(value) => {
+                          const min = field.value?.[0] ?? 0;
+                          field.onChange([min, value]);
+                        }}
+                        className="w-full border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all"
+                      />
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="pricingDescription"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-x-0.5 font-medium">
+                  Pricing Description <p className="text-blue-500">*</p>
+                </FormLabel>
+                <FormControl>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full border-neutral-300 dark:border-neutral-800 rounded-sm hover:border-neutral-400 hover:dark:border-neutral-700 transition-all">
+                      <SelectValue placeholder="Pricing description" />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-neutral-900">
+                      <SelectItem value="$" className="cursor-pointer">
+                        $ (cheap)
+                      </SelectItem>
+                      <SelectItem value="$$" className="cursor-pointer">
+                        $$ (medium)
+                      </SelectItem>
+                      <SelectItem value="$$$" className="cursor-pointer">
+                        $$$ (expensive)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="w-full flex items-center justify-start">
             <FormField
               name="logo"
               control={form.control}

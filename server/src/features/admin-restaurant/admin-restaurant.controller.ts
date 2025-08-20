@@ -278,27 +278,14 @@ export class AdminRestaurantController {
     };
   }
 
-  @Put('edit-item/itemId')
+  @Put('edit-item/:itemId')
   @HttpCode(201)
   @UseGuards(JwtRestaurantGuard)
   @UseInterceptors(FileInterceptor('file'))
   async editMenuItem(
     @Param('itemId') itemId: string,
     @Body() editMenuItemDto: CreateMenuItemDto,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new FileTypeValidator({
-            fileType: '.(png|jpg|jpeg|webp)',
-          }),
-          new MaxFileSizeValidator({
-            maxSize: 10 * 1024 * 1024,
-            message: 'File is too large. Max file size is 10MB',
-          }),
-        ],
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
     @Restaurant() restaurant: IRestaurant,
   ) {
     await this.adminRestaurantService.editMenuItem(

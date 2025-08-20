@@ -85,9 +85,11 @@ export const createMenuItemAction = async (
     }
 
     if (parsedData.variants && parsedData.variants.length > 0) {
-      parsedData.variants.forEach((variant) =>
-        formData.append("variants", JSON.stringify(variant))
-      );
+      formData.append("variants", JSON.stringify(parsedData.variants));
+    }
+
+    if (parsedData.addons && parsedData.addons.length > 0) {
+      formData.append("addons", JSON.stringify(parsedData.addons));
     }
 
     if (parsedData.image) {
@@ -194,6 +196,18 @@ export const publishRestaurantAction = async (
     });
 
     formData.append("phoneNumber", parsedData.phoneNumber);
+    formData.append("pricingDescription", parsedData.pricingDescription);
+
+    formData.append(
+      "freeDeliveryFirstOrder",
+      parsedData.freeDeliveryFirstOrder ? "true" : "false"
+    );
+
+    formData.append(
+      "deliveryTimeRange",
+      JSON.stringify(parsedData.deliveryTimeRange)
+    );
+
     if (parsedData.website) {
       formData.append("website", parsedData.website);
     }
@@ -250,12 +264,29 @@ export const manageRestaurantAction = async (
       );
 
     formData.append("phoneNumber", parsedData.phoneNumber);
+    formData.append("pricingDescription", parsedData.pricingDescription);
+
+    formData.append(
+      "freeDeliveryFirstOrder",
+      parsedData.freeDeliveryFirstOrder ? "true" : "false"
+    );
+
+    formData.append(
+      "deliveryTimeRange",
+      JSON.stringify(parsedData.deliveryTimeRange)
+    );
+
     if (parsedData.website) {
       formData.append("website", parsedData.website);
     }
 
-    formData.append("logo", parsedData.logo);
-    formData.append("coverImage", parsedData.coverImage);
+    if (typeof parsedData.logo !== "string") {
+      formData.append("logo", parsedData.logo);
+    }
+
+    if (typeof parsedData.coverImage !== "string") {
+      formData.append("coverImage", parsedData.coverImage);
+    }
 
     const response = await ServerEndpoint.patch(
       "/admin-restaurant/manage-restaurant",
@@ -489,12 +520,18 @@ export const editMenuItemAction = async (
     }
 
     if (parsedData.variants && parsedData.variants.length > 0) {
-      parsedData.variants.forEach((variant) =>
-        formData.append("variants", JSON.stringify(variant))
-      );
+      formData.append("variants", JSON.stringify(parsedData.variants));
     }
 
-    if (parsedData.image) {
+    if (parsedData.addons && parsedData.addons.length > 0) {
+      formData.append("addons", JSON.stringify(parsedData.addons));
+    }
+
+    if (
+      parsedData.image &&
+      typeof parsedData.image !== "string" &&
+      parsedData.image instanceof File
+    ) {
       formData.append("file", parsedData.image);
     }
 

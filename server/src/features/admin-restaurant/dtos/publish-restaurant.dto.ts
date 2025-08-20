@@ -1,5 +1,9 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -119,6 +123,30 @@ export class PublishRestaurantDto {
   @IsOptional()
   @IsUrl({}, { message: 'Invalid website URL' })
   website?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true')
+  @IsBoolean()
+  freeDeliveryFirstOrder?: boolean;
+
+  @IsString()
+  @IsNotEmpty({ message: 'pricing description is required' })
+  pricingDescription: string;
+
+  @Transform(({ value }) => {
+    try {
+      const arr = JSON.parse(value) as number[];
+      if (Array.isArray(arr) && arr.length === 2) return arr.map(Number);
+      return undefined;
+    } catch {
+      return undefined;
+    }
+  })
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @IsNumber({}, { each: true })
+  deliveryTimeRange: [number, number];
 }
 
 export class OpeningHoursDto {
@@ -152,4 +180,28 @@ export class RestaurantManagementDto {
   @IsOptional()
   @IsUrl({}, { message: 'Invalid website URL' })
   website?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true')
+  @IsBoolean()
+  freeDeliveryFirstOrder?: boolean;
+
+  @IsString()
+  @IsNotEmpty({ message: 'pricing description is required' })
+  pricingDescription: string;
+
+  @Transform(({ value }) => {
+    try {
+      const arr = JSON.parse(value) as number[];
+      if (Array.isArray(arr) && arr.length === 2) return arr.map(Number);
+      return undefined;
+    } catch {
+      return undefined;
+    }
+  })
+  @IsArray()
+  @ArrayMinSize(2)
+  @ArrayMaxSize(2)
+  @IsNumber({}, { each: true })
+  deliveryTimeRange: [number, number];
 }

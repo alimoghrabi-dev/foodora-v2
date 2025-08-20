@@ -28,7 +28,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  if (!token) {
+  const pathname = request.nextUrl.pathname;
+
+  if (!token && pathname !== "/login") {
     await removeSessionOnLogout();
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -52,7 +54,11 @@ export async function middleware(request: NextRequest) {
 
     return response;
   } catch (err) {
-    console.error(err);
+    if (err instanceof Error) {
+      console.error(err.message);
+    } else {
+      console.error(err);
+    }
 
     const redirectResponse = NextResponse.redirect(
       new URL("/login", request.url)
@@ -60,7 +66,9 @@ export async function middleware(request: NextRequest) {
 
     await removeSessionOnLogout();
 
-    return redirectResponse;
+    if (pathname !== "/login") {
+      return redirectResponse;
+    }
   }
 }
 

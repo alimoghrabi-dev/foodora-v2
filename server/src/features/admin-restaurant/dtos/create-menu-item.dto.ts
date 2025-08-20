@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -7,22 +7,45 @@ import {
   IsOptional,
   IsString,
   MaxLength,
-  Min,
 } from 'class-validator';
+
+export class VariantOptionDto {
+  @IsString()
+  @IsNotEmpty()
+  readonly name: string;
+
+  @IsNumber()
+  @IsOptional()
+  readonly price?: number;
+}
 
 export class VariantDto {
   @IsString()
   @IsNotEmpty({ message: 'Variant name is required' })
-  name: string;
+  readonly name: string;
 
-  @IsOptional()
-  @IsNumber({}, { message: 'Price must be a number' })
-  @Min(0)
-  price?: number;
+  @IsArray()
+  @Type(() => VariantOptionDto)
+  @IsNotEmpty({ message: 'Variant options are required' })
+  readonly options: VariantOptionDto[];
 
   @IsOptional()
   @IsBoolean()
-  isAvailable?: boolean = true;
+  readonly isRequired?: boolean = true;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly isAvailable?: boolean = true;
+}
+
+export class AddonDto {
+  @IsString()
+  @IsNotEmpty({ message: 'Addon name is required' })
+  readonly name: string;
+
+  @IsNumber()
+  @IsOptional()
+  readonly price?: number;
 }
 
 export class CreateMenuItemDto {
@@ -45,22 +68,47 @@ export class CreateMenuItemDto {
   readonly category: string;
 
   @IsOptional()
-  @Type(() => Boolean)
-  @IsBoolean()
-  isAvailable?: boolean;
+  @IsArray()
+  @IsString({ each: true })
+  readonly tags?: string[];
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  tags?: string[];
+  readonly ingredients?: string[];
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  ingredients?: string[];
-
-  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value) as VariantDto[];
+      } catch {
+        return [];
+      }
+    }
+    return value as VariantDto[];
+  })
   @IsArray()
   @Type(() => VariantDto)
-  variants?: VariantDto[];
+  readonly variants?: VariantDto[];
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value) as AddonDto[];
+      } catch {
+        return [];
+      }
+    }
+    return value as AddonDto[];
+  })
+  @IsArray()
+  @Type(() => AddonDto)
+  readonly addons?: AddonDto[];
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true')
+  @IsBoolean()
+  readonly isAvailable?: boolean;
 }

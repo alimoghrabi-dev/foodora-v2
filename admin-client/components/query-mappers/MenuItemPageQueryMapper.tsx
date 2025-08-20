@@ -11,7 +11,6 @@ import {
 import { Button, buttonVariants } from "../ui/button";
 import { Pencil, Trash2, Star, Loader2, Sparkles } from "lucide-react";
 import { Badge } from "../ui/badge";
-import { ScrollArea } from "../ui/scroll-area";
 import Image from "next/image";
 import Link from "next/link";
 import { cn, formatPriceWithAbbreviation } from "@/lib/utils";
@@ -415,42 +414,107 @@ const MenuItemPageQueryMapper: React.FC<{
                   <div className="w-24 h-px bg-neutral-300 dark:bg-neutral-900" />
                 </DialogHeader>
                 <QueryWrapper>
-                  <VariantDialogManagement variants={item.variants} />
+                  <VariantDialogManagement
+                    variants={item.variants}
+                    itemId={item._id}
+                    itemTitle={item.title}
+                  />
                 </QueryWrapper>
               </DialogContent>
             </Dialog>
           </div>
-          <ScrollArea className="max-h-[200px] pr-2">
-            <div className="grid gap-3">
-              {item.variants.map(
-                (v: {
+
+          <div className="space-y-4">
+            {item.variants.map(
+              (v: {
+                _id: string;
+                name: string;
+                options: {
                   _id: string;
                   name: string;
                   price: number;
-                  isAvailable: boolean;
-                }) => (
-                  <div
-                    key={v._id}
-                    className="flex items-center justify-between rounded-md border p-3 bg-muted/30 dark:bg-muted/40"
-                  >
-                    <span className="font-medium capitalize">{v.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      ${v.price.toFixed(2)} •{" "}
-                      {v.isAvailable ? (
-                        <span className="text-green-500 font-medium">
-                          Available
-                        </span>
-                      ) : (
-                        <span className="text-red-500 font-medium">
-                          Unavailable
+                }[];
+                isRequired: boolean;
+                isAvailable: boolean;
+              }) => (
+                <div
+                  key={v._id}
+                  className="rounded-xl border border-border/50 bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-lg capitalize">
+                        {v.name}
+                      </span>
+                      {v.isRequired && (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">
+                          Required
                         </span>
                       )}
+                    </div>
+
+                    <span
+                      className={`text-sm font-medium ${
+                        v.isAvailable ? "text-green-500" : "text-red-500"
+                      }`}
+                    >
+                      {v.isAvailable ? "Available" : "Unavailable"}
                     </span>
                   </div>
-                )
-              )}
-            </div>
-          </ScrollArea>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {v.options.map((opt) => (
+                      <div
+                        key={opt._id}
+                        className="flex flex-col justify-between rounded-lg border bg-neutral-100 dark:bg-neutral-950/60 p-3"
+                      >
+                        <span className="font-medium capitalize">
+                          {opt.name}
+                        </span>
+                        {opt.price > 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            +{formatPriceWithAbbreviation(opt.price)}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
+            {item.addons?.length > 0 && (
+              <div>
+                <div className="w-full flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-lg text-foreground">
+                    Addons - {item.addons.length}
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {item.addons.map((addon) => (
+                    <div
+                      key={addon._id}
+                      className={cn(
+                        "group relative flex flex-col justify-between rounded-xl border bg-gradient-to-br from-neutral-100 to-white dark:from-neutral-900 dark:to-neutral-950 p-4 shadow hover:shadow-md transition-all duration-200"
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium capitalize">
+                          {addon.name}
+                        </span>
+                      </div>
+
+                      {addon.price > 0 && (
+                        <span className="mt-2 text-sm font-semibold text-primary">
+                          +{formatPriceWithAbbreviation(addon.price)}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
