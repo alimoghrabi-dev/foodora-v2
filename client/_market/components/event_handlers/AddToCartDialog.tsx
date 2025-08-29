@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import AddToCartButton from "./AddToCartButton";
+import { refetchSessionCookie } from "@/lib/session-updates";
 
 const MAX_VISIBLE = 4;
 
@@ -101,6 +102,8 @@ const AddToCartDialog: React.FC<{
       });
     },
     onSuccess: async () => {
+      await refetchSessionCookie();
+
       setSuccess(true);
 
       setTimeout(() => {

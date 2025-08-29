@@ -4,6 +4,11 @@ import { getFavoriteRestaurants } from "@/_market/lib/server-actions";
 import QueryWrapper from "@/components/providers/query-wrapper";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getUserSession } from "@/lib/get-user";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Foodora | Favorites",
+};
 
 export default async function FavoritesPage() {
   const user = await getUserSession();

@@ -2,6 +2,32 @@ import { removeSessionOnLogout } from "@/lib/remove-session";
 import ServerEndpoint from "@/lib/server-endpoint";
 import axios from "axios";
 
+export const fetchAddress = async (lat: number, lon: number) => {
+  const res = await fetch(
+    `/api/geo/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(
+      lon
+    )}`
+  );
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(txt || `Reverse geocode failed (${res.status})`);
+  }
+
+  return res.json();
+};
+
+export const fetchByIP = async () => {
+  const res = await fetch(`/api/geo/ip`);
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(txt || `IP lookup failed (${res.status})`);
+  }
+
+  return res.json();
+};
+
 export const logout = async () => {
   try {
     const response = await ServerEndpoint.post("/admin-restaurant/logout");
@@ -214,27 +240,36 @@ export const addItemToCart = async (
   }
 };
 
-export const removeItemFromCart = async (
-  itemId: string,
-  restaurantId: string
-) => {
+export const removeItemFromCart = async (cartId: string, itemId: string) => {
   try {
     const response = await ServerEndpoint.patch(
-      `/cart/remove-item/${itemId}`,
-      {
-        restaurantId: restaurantId,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      `/cart/remove-item/${cartId}/${itemId}`
     );
 
     if (response.status !== 201) {
       throw new Error(
         response.data.message ||
           "Something went wrong while removing item from cart!"
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const deleteWholeCartAction = async (cartId: string) => {
+  try {
+    const response = await ServerEndpoint.delete(`/cart/delete-cart/${cartId}`);
+
+    if (response.status !== 201) {
+      throw new Error(
+        response.data.message ||
+          "Something went wrong while deleting your cart!"
       );
     }
   } catch (error) {
@@ -257,6 +292,35 @@ export const addFavoriteAction = async (restaurantId: string) => {
       throw new Error(
         response.data.message ||
           "Something went wrong while adding restaurant to your favorites!"
+      );
+    }
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const updateItemQuantityAction = async (
+  cartId: string,
+  itemId: string,
+  quantity: number
+) => {
+  try {
+    const response = await ServerEndpoint.patch(
+      `/cart/update-quantity/${cartId}/${itemId}`,
+      {
+        quantity,
+      }
+    );
+
+    if (response.status !== 201) {
+      throw new Error(
+        response.data.message ||
+          "Something went wrong while updating your item quantity!"
       );
     }
   } catch (error) {
@@ -303,6 +367,49 @@ export const getClientFavoriteRestaurants = async () => {
     }
 
     return response.data.restaurants;
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const getClientUserCarts = async () => {
+  try {
+    const response = await ServerEndpoint.get("/cart/get-carts");
+
+    if (response.status !== 200) {
+      throw new Error(
+        response.data.message ||
+          "Something went wrong while getting your carts!"
+      );
+    }
+
+    return response.data.carts;
+  } catch (error) {
+    console.error(error);
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data.message || "Something went wrong");
+    } else if (error instanceof Error) {
+      throw new Error("Something went wrong");
+    }
+  }
+};
+
+export const getClientCartById = async (cartId: string) => {
+  try {
+    const response = await ServerEndpoint.get(`/cart/get-cart/${cartId}`);
+
+    if (response.status !== 200) {
+      throw new Error(
+        response.data.message || "Something went wrong while getting your cart!"
+      );
+    }
+
+    return response.data.cart;
   } catch (error) {
     console.error(error);
     if (axios.isAxiosError(error)) {

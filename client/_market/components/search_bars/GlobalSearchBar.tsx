@@ -7,6 +7,7 @@ import { Search } from "lucide-react";
 
 const GlobalSearchBar: React.FC = () => {
   const [isFocused, setIsFocused] = useState(false);
+
   const [query, setQuery] = useState("");
 
   return (
@@ -72,17 +73,7 @@ const GlobalSearchBar: React.FC = () => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25 }}
               className="absolute mt-2 w-full bg-white border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg p-4"
-            >
-              {query ? (
-                <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                  Searching for: <span className="font-semibold">{query}</span>
-                </p>
-              ) : (
-                <p className="text-sm text-neutral-400">
-                  Start typing to search...
-                </p>
-              )}
-            </motion.div>
+            ></motion.div>
           )}
         </AnimatePresence>
       </div>

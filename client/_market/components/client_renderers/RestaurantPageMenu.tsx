@@ -11,8 +11,7 @@ import RestaurantPageMenuItems from "./RestaurantPageMenuItems";
 
 const RestaurantPageMenu: React.FC<{
   restaurantId: string;
-  user: IUser | null;
-}> = ({ restaurantId, user }) => {
+}> = ({ restaurantId }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [activatedCategory, setActivatedCategory] = useState<{
@@ -149,7 +148,6 @@ const RestaurantPageMenu: React.FC<{
       <RestaurantPageMenuItems
         restaurantId={restaurantId}
         activatedCategory={activatedCategory}
-        user={user}
       />
     </div>
   );

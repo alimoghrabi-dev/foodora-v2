@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Delete,
+  Get,
   HttpCode,
   Param,
   Patch,
@@ -38,18 +40,52 @@ export class CartController {
     );
   }
 
-  @Patch('remove-item/:itemId')
+  @Patch('remove-item/:cartId/:itemId')
   @HttpCode(201)
   @UseGuards(JwtAuthGuard)
   async removeItemFromCart(
+    @Param('cartId') cartId: string,
     @Param('itemId') itemId: string,
-    @Body('restaurantId') restaurantId: string,
     @User() user: IUser,
   ) {
-    return await this.cartService.removeItemFromCart(
-      restaurantId,
+    return await this.cartService.removeItemFromCart(cartId, itemId, user);
+  }
+
+  @Delete('delete-cart/:cartId')
+  @HttpCode(201)
+  @UseGuards(JwtAuthGuard)
+  async deleteCart(@Param('cartId') cartId: string, @User() user: IUser) {
+    return await this.cartService.deleteCart(cartId, user);
+  }
+
+  @Patch('update-quantity/:cartId/:itemId')
+  @HttpCode(201)
+  @UseGuards(JwtAuthGuard)
+  async updateItemQuantity(
+    @Param('cartId') cartId: string,
+    @Param('itemId') itemId: string,
+    @Body('quantity') quantity: number,
+    @User() user: IUser,
+  ) {
+    return await this.cartService.updateItemQuantity(
+      cartId,
       itemId,
       user,
+      quantity,
     );
+  }
+
+  @Get('get-carts')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async getUserCarts(@User() user: IUser) {
+    return await this.cartService.getUserCarts(user);
+  }
+
+  @Get('get-cart/:cartId')
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  async getCartById(@User() user: IUser, @Param('cartId') cartId: string) {
+    return await this.cartService.getCartById(user, cartId);
   }
 }

@@ -86,5 +86,10 @@ interface ICart {
       optionId: string;
       price: number;
     }[];
+    addons: {
+      addonId: string;
+      name: string;
+      price: number;
+    }[];
   }[];
 }

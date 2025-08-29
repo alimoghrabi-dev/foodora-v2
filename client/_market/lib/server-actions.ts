@@ -172,3 +172,80 @@ export const getFavoriteRestaurants = async () => {
     }
   }
 };
+
+export const getUserCarts = async () => {
+  try {
+    const token = await getCurrentToken();
+
+    if (!token) {
+      throw new Error("You're Unauthorized!");
+    }
+
+    const response = await ServerEndpoint.get("/cart/get-carts", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        response.data.message ||
+          "Something went wrong while getting your carts!"
+      );
+    }
+
+    return {
+      carts: response.data.carts,
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return {
+        error:
+          error.response?.data.message ||
+          "Something went wrong while getting your carts",
+      };
+    } else if (error instanceof Error) {
+      return {
+        error: "Something went wrong while getting your carts",
+      };
+    }
+  }
+};
+
+export const getCartById = async (cartId: string) => {
+  try {
+    const token = await getCurrentToken();
+
+    if (!token) {
+      throw new Error("You're Unauthorized!");
+    }
+
+    const response = await ServerEndpoint.get(`/cart/get-cart/${cartId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        response.data.message || "Something went wrong while getting your cart!"
+      );
+    }
+
+    return {
+      cart: response.data.cart,
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return {
+        error:
+          error.response?.data.message ||
+          "Something went wrong while getting your cart",
+      };
+    } else if (error instanceof Error) {
+      return {
+        error: "Something went wrong while getting your cart",
+      };
+    }
+  }
+};

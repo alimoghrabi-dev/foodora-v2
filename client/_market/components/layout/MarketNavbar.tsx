@@ -5,6 +5,7 @@ import { getUserSession } from "@/lib/get-user";
 import QueryWrapper from "@/components/providers/query-wrapper";
 import MarketNavbarSideItems from "../shared/MarketNavbarSideItems";
 import MarketNavbarBottomItems from "../shared/MarketNavbarBottomItems";
+import UserAddress from "../event_handlers/UserAddress";
 
 const MarketNavbar: React.FC = async () => {
   const user = await getUserSession();
@@ -18,13 +19,15 @@ const MarketNavbar: React.FC = async () => {
         >
           foodora
         </Link>
-        <div>address</div>
+        <QueryWrapper>
+          <UserAddress />
+        </QueryWrapper>
         <div className="flex items-center gap-6">
           <QueryWrapper>
             <UserProfile user={user} />
           </QueryWrapper>
           <div className="flex items-center gap-2">
-            <MarketNavbarSideItems />
+            <MarketNavbarSideItems user={user} />
           </div>
         </div>
       </div>

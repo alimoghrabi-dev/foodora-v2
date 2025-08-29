@@ -27,15 +27,3 @@ export function getIsAutoClosed(openingHours: OpeningHours): boolean {
 
   return !(currentMinutes >= openMinutes && currentMinutes < closeMinutes);
 }
-
-export function calculateItemTotal(
-  basePrice: number,
-  quantity: number,
-  variants: { price?: number }[] = [],
-  addons: { price?: number }[] = [],
-): number {
-  const variantTotal = variants.reduce((sum, v) => sum + (v.price || 0), 0);
-  const addonTotal = addons.reduce((sum, a) => sum + (a.price || 0), 0);
-
-  return (basePrice + variantTotal + addonTotal) * quantity;
-}

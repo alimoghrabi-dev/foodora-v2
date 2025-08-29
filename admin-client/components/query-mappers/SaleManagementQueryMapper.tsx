@@ -5,6 +5,7 @@ import { Loader2, PlusCircle } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import SaleManagementErrorPage from "../errors/SaleManagementErrorPage";
 import {
+  getClientMenuItems,
   getClientSaleItems,
   removeRestaurantSaleAction,
 } from "@/lib/actions/client.actions";
@@ -74,6 +75,11 @@ const SaleManagementQueryMapper: React.FC<{
           queryFn: getClientSaleItems,
         });
 
+        queryClient.fetchQuery({
+          queryKey: ["MENU_ITEMS"],
+          queryFn: getClientMenuItems,
+        });
+
         setAlertOpen(false);
         toast.success(`Sale removed successfully for ${restaurant?.name}`);
       },
@@ -134,7 +140,7 @@ const SaleManagementQueryMapper: React.FC<{
           <DialogTrigger asChild>
             <button
               type="button"
-              disabled={isPending || isRefetching || !restaurant?.onSale}
+              disabled={isPending || isRefetching || restaurant?.onSale}
               className="disabled:pointer-events-none disabled:opacity-50 select-none disabled:cursor-not-allowed flex items-center bg-primary text-white rounded-md gap-1.5 transition-all hover:opacity-80 px-3.5 py-2 cursor-pointer"
             >
               <PlusCircle size={19} />

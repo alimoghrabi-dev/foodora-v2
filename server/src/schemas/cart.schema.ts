@@ -62,12 +62,6 @@ export class Cart {
 
   @Prop({ type: [CartItemSchema], default: [] })
   items: CartItem[];
-
-  @Prop({ type: Number, required: true })
-  totalPrice: number;
-
-  @Prop({ type: String })
-  specialIntructions: string;
 }
 
 export const CartSchema = SchemaFactory.createForClass(Cart);

@@ -13,8 +13,7 @@ const RestaurantPageMenuItems: React.FC<{
     _id: string;
     name: string;
   } | null;
-  user: IUser | null;
-}> = ({ restaurantId, activatedCategory, user }) => {
+}> = ({ restaurantId, activatedCategory }) => {
   const {
     data: items,
     isPending,
@@ -103,7 +102,7 @@ const RestaurantPageMenuItems: React.FC<{
       )}
       <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {items.map((item: IMenuItem) => (
-          <RestaurantPageMenuItemCard key={item._id} item={item} user={user} />
+          <RestaurantPageMenuItemCard key={item._id} item={item} />
         ))}
       </div>
     </section>

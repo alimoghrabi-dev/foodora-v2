@@ -205,7 +205,7 @@ const RestaurantPageClient: React.FC<{
             favBtnState={favBtnState}
           />
         </div>
-        <RestaurantPageMenu restaurantId={restaurant._id} user={user} />
+        <RestaurantPageMenu restaurantId={restaurant._id} />
       </div>
     </section>
   );

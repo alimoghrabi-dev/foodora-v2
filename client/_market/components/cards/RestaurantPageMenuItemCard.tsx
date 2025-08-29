@@ -8,8 +8,7 @@ import AddToCartDialog from "../event_handlers/AddToCartDialog";
 
 const RestaurantPageMenuItemCard: React.FC<{
   item: IMenuItem;
-  user: IUser | null;
-}> = ({ item, user }) => {
+}> = ({ item }) => {
   return (
     <div className="w-full p-4 border border-neutral-300 bg-neutral-50 rounded-xl flex flex-col gap-y-6 group overflow-hidden cursor-pointer hover:bg-primary/5 transition-all">
       <div className="flex justify-between gap-x-6">
@@ -49,7 +48,7 @@ const RestaurantPageMenuItemCard: React.FC<{
         <p className="mt-0.5 text-neutral-700 font-normal text-sm">
           <strong>Ingredients:</strong> {item.ingredients.join(", ")}
         </p>
-        <AddToCartDialog item={item} user={user} />
+        <AddToCartDialog item={item} />
       </div>
     </div>
   );
